@@ -32,6 +32,21 @@ Conectar el repo a Vercel y configurar las variables de entorno `BUN_PUBLIC_*`
 (ver `.env.example`). El panel admin requiere login con hashes SHA-256 definidos
 en esas variables.
 
+## Credenciales de operadores (login)
+
+El login compara `SHA-256(password)` contra el hash almacenado en el registro del
+operador en IndexedDB. Al primer arranque, `src/lib/db/seed.ts` crea dos
+operadores (`op_001`, `op_002`) usando `BUN_PUBLIC_OPERATOR_1_USER`/`_PASS_HASH` y
+`BUN_PUBLIC_OPERATOR_2_USER`/`_PASS_HASH`. Genera los hashes localmente:
+
+```bash
+printf '%s' "tu_contraseña" | sha256sum   # Linux/macOS
+# o usa una herramienta online de SHA-256 sobre el texto plano de la contraseña
+```
+
+Copia `.env.example` a `.env` y pega los hashes. Nunca guardes la contraseña en
+texto plano. La sesión expira según `sessionTimeoutHours` en `config`.
+
 ## Estructura
 
 ```

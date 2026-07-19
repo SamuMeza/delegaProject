@@ -8,6 +8,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
+import { seedDatabase } from "@/lib/db/seed";
 
 const elem = document.getElementById("root")!;
 const app = (
@@ -17,4 +18,8 @@ const app = (
 );
 
 // https://bun.com/docs/bundler/hot-reloading#import-meta-hot-data
-(import.meta.hot.data.root ??= createRoot(elem)).render(app);
+seedDatabase()
+  .catch((err) => console.error("Error al inicializar la base de datos", err))
+  .finally(() => {
+    (import.meta.hot.data.root ??= createRoot(elem)).render(app);
+  });

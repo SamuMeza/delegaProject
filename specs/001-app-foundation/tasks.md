@@ -30,11 +30,11 @@ description: "Task list for App Foundation (PRIORIDAD 1) - Delega"
 
 **Purpose**: Project initialization and basic structure for a static React + TS + Tailwind build deployable to Vercel.
 
-- [ ] T001 Create/verify React 19 + TypeScript + Tailwind v4 project scaffold (src/frontend.tsx, src/App.tsx, src/index.html, styles/globals.css, build.ts)
-- [ ] T002 Configure Vercel static deploy: create/verify vercel.json with SPA rewrite to index.html
-- [ ] T003 [P] Add .env.example with BUN_PUBLIC_OPERATOR_1_PASS_HASH and BUN_PUBLIC_OPERATOR_2_PASS_HASH (owner-defined SHA-256 hashes)
-- [ ] T004 [P] Verify bunfig.toml and package.json scripts (build, dev) use Bun and BUN_PUBLIC_* env prefix
-- [ ] T005 [P] Confirm tsconfig.json has strict: true (no any; prefer unknown + type guards)
+- [X] T001 Create/verify React 19 + TypeScript + Tailwind v4 project scaffold (src/frontend.tsx, src/App.tsx, src/index.html, styles/globals.css, build.ts)
+- [X] T002 Configure Vercel static deploy: create/verify vercel.json with SPA rewrite to index.html
+- [X] T003 [P] Add .env.example with BUN_PUBLIC_OPERATOR_1_PASS_HASH and BUN_PUBLIC_OPERATOR_2_PASS_HASH (owner-defined SHA-256 hashes)
+- [X] T004 [P] Verify bunfig.toml and package.json scripts (build, dev) use Bun and BUN_PUBLIC_* env prefix
+- [X] T005 [P] Confirm tsconfig.json has strict: true (no any; prefer unknown + type guards)
 
 **Checkpoint**: Project builds statically and is ready to connect to Vercel.
 
@@ -44,11 +44,11 @@ description: "Task list for App Foundation (PRIORIDAD 1) - Delega"
 
 **Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented.
 
-- [ ] T006 Implement Dexie database instance and stores in src/lib/db/delegaDb.ts (operators [key id, index username], config [key id], plus orders/clients/subscriptions/activityLog declared per manual §2.2)
-- [ ] T007 [P] Define strict TypeScript entity types in src/lib/types/index.ts (Operator, Config, Session, OrderStatus, ServiceType, etc. per data-model.md)
-- [ ] T008 Implement first-run seeding in src/lib/db/seed.ts: if config empty, insert default config with sessionTimeoutHours, orderCounter=0, subscriptionCounter=0, and priceRanges; insert two operators with separate accounts (username + passwordHash from env)
-- [ ] T009 [P] Implement session module in src/lib/auth/session.ts: save/load/clear Session in localStorage with expiresAt; isExpired() check
-- [ ] T010 [P] Implement password hashing util in src/lib/auth/hash.ts using Web Crypto SHA-256 (no plaintext storage)
+- [X] T006 Implement Dexie database instance and stores in src/lib/db/delegaDb.ts (operators [key id, index username], config [key id], plus orders/clients/subscriptions/activityLog declared per manual §2.2)
+- [X] T007 [P] Define strict TypeScript entity types in src/lib/types/index.ts (Operator, Config, Session, OrderStatus, ServiceType, etc. per data-model.md)
+- [X] T008 Implement first-run seeding in src/lib/db/seed.ts: if config empty, insert default config with sessionTimeoutHours, orderCounter=0, subscriptionCounter=0, and priceRanges; insert two operators with separate accounts (username + passwordHash from env)
+- [X] T009 [P] Implement session module in src/lib/auth/session.ts: save/load/clear Session in localStorage with expiresAt; isExpired() check
+- [X] T010 [P] Implement password hashing util in src/lib/auth/hash.ts using Web Crypto SHA-256 (no plaintext storage)
 
 **Checkpoint**: Foundation ready — Dexie stores, types, seeding, session and hashing utilities exist. User stories can now begin.
 
@@ -60,9 +60,9 @@ description: "Task list for App Foundation (PRIORIDAD 1) - Delega"
 
 **Independent Test**: `bun run build` produces dist/ without errors; connecting repo to Vercel yields an accessible URL serving the SPA. (quickstart.md Q1, Q6)
 
-- [ ] T011 [US1] Connect repository to Vercel and verify automatic deploy on push (manual/vercel step)
-- [ ] T012 [US1] Validate vercel.json SPA rewrite serves index.html for unknown routes so all client-side routes work after manual deploy from Vercel (src via build.ts → dist/)
-- [ ] T013 [US1] Run `bun run build` and confirm exit 0 with dist/index.html generated
+- [X] T011 [US1] Connect repository to Vercel and verify automatic deploy on push (manual/vercel step)
+- [X] T012 [US1] Validate vercel.json SPA rewrite serves index.html for unknown routes so all client-side routes work after manual deploy from Vercel (src via build.ts → dist/)
+- [X] T013 [US1] Run `bun run build` and confirm exit 0 with dist/index.html generated
 
 **Checkpoint**: Build is reproducible and deployable to static host.
 
@@ -74,9 +74,9 @@ description: "Task list for App Foundation (PRIORIDAD 1) - Delega"
 
 **Independent Test**: On first app load with empty storage, operators (2) and config (1) exist in IndexedDB and survive reload (100% retention, SC-2). (quickstart.md Q3)
 
-- [ ] T014 [US2] Wire seeding call into app bootstrap so stores populate on first run (src/frontend.tsx or src/lib/db)
-- [ ] T015 [US2] Verify indices: operators indexed by username; config keyed by fixed id (src/lib/db/delegaDb.ts)
-- [ ] T016 [US2] Confirm seeded data is queryable via Dexie and not duplicated on subsequent loads
+- [X] T014 [US2] Wire seeding call into app bootstrap so stores populate on first run (src/frontend.tsx or src/lib/db)
+- [X] T015 [US2] Verify indices: operators indexed by username; config keyed by fixed id (src/lib/db/delegaDb.ts)
+- [X] T016 [US2] Confirm seeded data is queryable via Dexie and not duplicated on subsequent loads
 
 **Checkpoint**: Local persistence and seeding verified in browser DevTools.
 
@@ -88,9 +88,9 @@ description: "Task list for App Foundation (PRIORIDAD 1) - Delega"
 
 **Independent Test**: A component using the hook reflects store changes live without manual reload (list/create/update). (contracts not required; verified via UI reactivity)
 
-- [ ] T017 [US3] Implement useDelegaDB hook in src/hooks/useDelegaDB.ts wrapping dexie-react-hooks (useLiveQuery) for operators/config
-- [ ] T018 [US3] Expose typed read/write helpers (getConfig, upsertOperator, etc.) hiding Dexie details from screens
-- [ ] T019 [US3] Use the hook in at least one existing placeholder page to prove reactivity
+- [X] T017 [US3] Implement useDelegaDB hook in src/hooks/useDelegaDB.ts wrapping dexie-react-hooks (useLiveQuery) for operators/config
+- [X] T018 [US3] Expose typed read/write helpers (getConfig, upsertOperator, etc.) hiding Dexie details from screens
+- [X] T019 [US3] Use the hook in at least one existing placeholder page to prove reactivity
 
 **Checkpoint**: Screens can read/write local data reactively through the abstraction.
 
@@ -102,11 +102,11 @@ description: "Task list for App Foundation (PRIORIDAD 1) - Delega"
 
 **Independent Test**: Valid credentials → panel access + persisted session; invalid → rejected; after sessionTimeoutHours → auto logout/redirect. (quickstart.md Q4; SC-3, SC-5)
 
-- [ ] T020 [US4] Implement useAuth hook in src/hooks/useAuth.ts: login(username, password) compares SHA-256 against operator.passwordHash; on success create Session
-- [ ] T021 [US4] Enforce no-plaintext: only passwordHash stored; reject on mismatch with generic "Credenciales incorrectas"
-- [ ] T022 [US4] Implement logout (cerrar sesión) clearing Session from localStorage and redirect to /admin/login
-- [ ] T023 [US4] Implement expiration: on protected access, if now > expiresAt clear session and redirect to login
-- [ ] T024 [US4] Protect session timeout value via config.sessionTimeoutHours (read from Config entity)
+- [X] T020 [US4] Implement useAuth hook in src/hooks/useAuth.ts: login(username, password) compares SHA-256 against operator.passwordHash; on success create Session
+- [X] T021 [US4] Enforce no-plaintext: only passwordHash stored; reject on mismatch with generic "Credenciales incorrectas"
+- [X] T022 [US4] Implement logout (cerrar sesión) clearing Session from localStorage and redirect to /admin/login
+- [X] T023 [US4] Implement expiration: on protected access, if now > expiresAt clear session and redirect to login
+- [X] T024 [US4] Protect session timeout value via config.sessionTimeoutHours (read from Config entity)
 
 **Checkpoint**: Auth flow complete: login, logout, expiration, rejection of invalid creds.
 
@@ -118,10 +118,10 @@ description: "Task list for App Foundation (PRIORIDAD 1) - Delega"
 
 **Independent Test**: Authenticated user sees sidebar+header+content; logout works; any /admin/* without session redirects to login; 100% routes protected (SC-4). (quickstart.md Q5)
 
-- [ ] T025 [US5] Implement route guard (AdminGuard) in src/App.tsx protecting /admin/* except /admin/login
-- [ ] T026 [US5] Build AdminLayout in src/pages/admin/AdminLayout.tsx with sidebar (sections: Dashboard, Órdenes, Clientes, Suscripciones, Estadísticas, Log) + header showing operator identity
-- [ ] T027 [US5] Add logout (cerrar sesión) button in header wired to useAuth.logout (src/pages/admin/AdminLayout.tsx)
-- [ ] T028 [US5] Ensure each sidebar section renders a placeholder content area (no broken routes)
+- [X] T025 [US5] Implement route guard (AdminGuard) in src/App.tsx protecting /admin/* except /admin/login
+- [X] T026 [US5] Build AdminLayout in src/pages/admin/AdminLayout.tsx with sidebar (sections: Dashboard, Órdenes, Clientes, Suscripciones, Estadísticas, Log) + header showing operator identity
+- [X] T027 [US5] Add logout (cerrar sesión) button in header wired to useAuth.logout (src/pages/admin/AdminLayout.tsx)
+- [X] T028 [US5] Ensure each sidebar section renders a placeholder content area (no broken routes)
 
 **Checkpoint**: Panel structure and route protection complete.
 
@@ -131,11 +131,11 @@ description: "Task list for App Foundation (PRIORIDAD 1) - Delega"
 
 **Purpose**: Improvements that affect multiple user stories; final validation.
 
-- [ ] T029 [P] Run `bun x tsc --noEmit` and resolve all strict-type errors across src/
-- [ ] T030 [P] Run quickstart.md end-to-end validation (Q1–Q6) and document results
-- [ ] T031 [P] Address accessibility basics for login/panel (labels, focus, contrast) flagged in checklist CHK034 (AGENTS.md)
-- [ ] T032 [P] Handle edge cases from checklist: corrupted/expired localStorage session (CHK026) and partial seeding (CHK027) in src/lib/auth/session.ts / src/lib/db/seed.ts
-- [ ] T033 Documentation: note operator credential setup in README / .env.example
+- [X] T029 [P] Run `bun x tsc --noEmit` and resolve all strict-type errors across src/
+- [X] T030 [P] Run quickstart.md end-to-end validation (Q1–Q6) and document results
+- [X] T031 [P] Address accessibility basics for login/panel (labels, focus, contrast) flagged in checklist CHK034 (AGENTS.md)
+- [X] T032 [P] Handle edge cases from checklist: corrupted/expired localStorage session (CHK026) and partial seeding (CHK027) in src/lib/auth/session.ts / src/lib/db/seed.ts
+- [X] T033 Documentation: note operator credential setup in README / .env.example
 
 ---
 

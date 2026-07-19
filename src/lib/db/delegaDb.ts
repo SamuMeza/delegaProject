@@ -23,7 +23,7 @@ export class DelegaDB extends Dexie {
   constructor() {
     super("delega_app");
     this.version(1).stores({
-      operators: "id",
+      operators: "id, username",
       clients: "phone",
       subscriptions: "id, clientPhone",
       orders: "id, clientPhone, operatorId, status, subscriptionId",

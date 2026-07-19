@@ -42,6 +42,16 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// Protege el acceso a /admin/*: si la sesión expiró en caliente, redirige a login.
+function AdminGuardExpiry({ children }: { children: React.ReactNode }) {
+  const { session, isExpired, logout } = useAuth();
+  if (!session || isExpired()) {
+    logout();
+    return <Navigate to="/admin/login" replace />;
+  }
+  return <AdminGuard>{children}</AdminGuard>;
+}
+
 function AdminRoutes() {
   return (
     <Suspense fallback={<div className="p-8">Cargando…</div>}>
@@ -75,9 +85,9 @@ export function App() {
           <Route
             path="/admin/*"
             element={
-              <AdminGuard>
+              <AdminGuardExpiry>
                 <AdminRoutes />
-              </AdminGuard>
+              </AdminGuardExpiry>
             }
           />
         </Routes>

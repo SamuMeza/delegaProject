@@ -1,68 +1,48 @@
 import { useCallback, useState } from "react";
+import { db } from "@/lib/db/delegaDb";
+import { sha256 } from "@/lib/auth/hash";
+import {
+  clearSession,
+  loadSession,
+  saveSession,
+} from "@/lib/auth/session";
+import type { Session } from "@/lib/types";
 
-// Sesión en localStorage (manual §3.2).
-export interface Session {
-  operatorId: "op_001" | "op_002";
-  operatorName: string;
-  loginAt: string;
-  expiresAt: string;
-}
+// Autenticación de operadores (spec §FR-4, contracts §C1, research.md §R2).
+// Login compara SHA-256(password) contra operator.passwordHash en Dexie.
+// La sesión vive en localStorage con expiresAt derivado de config.
 
-const SESSION_KEY = "delega_session";
-
-async function sha256(text: string): Promise<string> {
-  const data = new TextEncoder().encode(text);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
+const DEFAULT_TIMEOUT_HOURS = 4;
 
 export function useAuth() {
-  const [session, setSession] = useState<Session | null>(() => {
-    const raw = localStorage.getItem(SESSION_KEY);
-    if (!raw) return null;
-    try {
-      const parsed = JSON.parse(raw) as Session;
-      if (new Date(parsed.expiresAt).getTime() < Date.now()) {
-        localStorage.removeItem(SESSION_KEY);
-        return null;
-      }
-      return parsed;
-    } catch {
-      return null;
-    }
-  });
+  const [session, setSession] = useState<Session | null>(() => loadSession());
 
   const login = useCallback(
     async (username: string, password: string): Promise<boolean> => {
+      if (!username || !password) return false;
+
+      const operator = await db.operators
+        .where("username")
+        .equals(username)
+        .first();
+      if (!operator) return false;
+
       const hash = await sha256(password);
-      const u1 = Bun.env.BUN_PUBLIC_OPERATOR_1_USER;
-      const p1 = Bun.env.BUN_PUBLIC_OPERATOR_1_PASS_HASH;
-      const u2 = Bun.env.BUN_PUBLIC_OPERATOR_2_USER;
-      const p2 = Bun.env.BUN_PUBLIC_OPERATOR_2_PASS_HASH;
-      let operatorId: Session["operatorId"] | null = null;
-      let operatorName = "";
-      if (username === u1 && hash === p1) {
-        operatorId = "op_001";
-        operatorName = Bun.env.BUN_PUBLIC_OPERATOR_1_NAME ?? "Operador 1";
-      } else if (username === u2 && hash === p2) {
-        operatorId = "op_002";
-        operatorName = Bun.env.BUN_PUBLIC_OPERATOR_2_NAME ?? "Operador 2";
-      }
-      if (!operatorId) return false;
-      const loginAt = new Date().toISOString();
-      const timeoutHours = 4;
-      const expiresAt = new Date(
-        Date.now() + timeoutHours * 3600 * 1000,
-      ).toISOString();
+      if (hash !== operator.passwordHash) return false;
+
+      const config = await db.config.get("app");
+      const timeoutHours = config?.sessionTimeoutHours ?? DEFAULT_TIMEOUT_HOURS;
+      const loginAt = Date.now();
+      const expiresAt = loginAt + timeoutHours * 3600 * 1000;
+
       const next: Session = {
-        operatorId,
-        operatorName,
+        operatorId: operator.id,
+        username: operator.username,
+        displayName: operator.displayName,
         loginAt,
         expiresAt,
       };
-      localStorage.setItem(SESSION_KEY, JSON.stringify(next));
+      saveSession(next);
       setSession(next);
       return true;
     },
@@ -70,9 +50,20 @@ export function useAuth() {
   );
 
   const logout = useCallback(() => {
-    localStorage.removeItem(SESSION_KEY);
+    clearSession();
     setSession(null);
   }, []);
 
-  return { session, login, logout, isAuthenticated: session !== null };
+  const isExpired = useCallback((): boolean => {
+    if (!session) return true;
+    return session.expiresAt < Date.now();
+  }, [session]);
+
+  return {
+    session,
+    isAuthenticated: session !== null && !isExpired(),
+    isExpired,
+    login,
+    logout,
+  };
 }

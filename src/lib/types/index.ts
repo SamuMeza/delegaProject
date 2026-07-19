@@ -1,7 +1,9 @@
 // Tipos estrictos para las entidades de Delega (manual técnico §2.2).
 // Solo definición de datos; la lógica de negocio vive en otra capa.
 
-export type OperatorId = "op_001" | "op_002";
+export type OperatorRole = "operator";
+
+export type PriceRanges = Record<string, { min: number; max: number }>;
 
 export type ServiceType =
   | "ensayo"
@@ -37,11 +39,12 @@ export type ActionType =
   | "cancel_subscription";
 
 export interface Operator {
-  id: OperatorId;
-  name: string;
-  services: ServiceType[];
-  active: boolean;
-  color: string;
+  id: string;
+  username: string;
+  displayName: string;
+  passwordHash: string;
+  role: OperatorRole;
+  createdAt: number;
 }
 
 export interface SubscriptionEmbedded {
@@ -160,7 +163,7 @@ export interface Order {
   clientPhone: string;
   clientName: string;
   serviceType: ServiceType;
-  operatorId: OperatorId;
+  operatorId: string;
   details: OrderDetails;
   hasMaterial: boolean | null;
   price: number;
@@ -195,7 +198,7 @@ export interface MonthlyStats {
 
 export interface ActivityLogEntry {
   id: string;
-  operatorId: OperatorId;
+  operatorId: string;
   action: ActionType;
   targetId: string;
   details: string;
@@ -204,8 +207,20 @@ export interface ActivityLogEntry {
 
 export interface Config {
   id: string;
-  next_order_id: number;
-  next_subscription_id: number;
-  notification_enabled: boolean;
-  session_timeout_hours: number;
+  sessionTimeoutHours: number;
+  orderCounter: number;
+  subscriptionCounter: number;
+  priceRanges: PriceRanges;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// Session: estado de acceso del operador en su dispositivo (vive en localStorage).
+// No es una entidad persistida en IndexedDB. Ver data-model.md.
+export interface Session {
+  operatorId: string;
+  username: string;
+  displayName: string;
+  loginAt: number;
+  expiresAt: number;
 }
