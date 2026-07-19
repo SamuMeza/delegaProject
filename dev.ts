@@ -19,14 +19,27 @@ const server = Bun.serve({
 
     if (pathname === "/index.html") {
       const html = await Bun.file(join(SRC, "index.html")).text();
-      const out = html.replace("./frontend.tsx", "/frontend.tsx");
-      return new Response(out, { headers: { "content-type": "text/html" } });
+      const out = html
+        .replace("./frontend.tsx", "/frontend.tsx")
+        .replace(
+          '<script type="module" src="/frontend.tsx" async>',
+          '<script type="module" src="/frontend.tsx">',
+        );
+      return new Response(out, {
+        headers: {
+          "content-type": "text/html",
+          "cache-control": "no-store",
+        },
+      });
     }
 
     const filePath = join(SRC, pathname);
     const file = Bun.file(filePath);
     if (!(await file.exists())) {
-      return new Response("Not found", { status: 404 });
+      return new Response("Not found", {
+        status: 404,
+        headers: { "cache-control": "no-store" },
+      });
     }
 
     try {
@@ -40,20 +53,26 @@ const server = Bun.serve({
         const msg = result.logs.map((l) => l.message).join("\n");
         return new Response(`Build error:\n${msg}`, {
           status: 500,
-          headers: { "content-type": "text/plain" },
+          headers: { "content-type": "text/plain", "cache-control": "no-store" },
         });
       }
       const out = result.outputs[0];
       if (!out) {
-        return new Response("Build produced no output", { status: 500 });
+        return new Response("Build produced no output", {
+          status: 500,
+          headers: { "cache-control": "no-store" },
+        });
       }
       return new Response(out.stream(), {
-        headers: { "content-type": out.type ?? "application/javascript" },
+        headers: {
+          "content-type": out.type ?? "application/javascript",
+          "cache-control": "no-store",
+        },
       });
     } catch (err) {
       return new Response(`Error: ${String(err)}`, {
         status: 500,
-        headers: { "content-type": "text/plain" },
+        headers: { "content-type": "text/plain", "cache-control": "no-store" },
       });
     }
   },
