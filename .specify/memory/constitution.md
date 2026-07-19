@@ -101,7 +101,9 @@ Amendments MUST follow this procedure:
 
 Versioning policy: MAJOR for removing/redefining principles; MINOR for adding a
 principle or materially expanding guidance; PATCH for clarifications and wording
-fixes. Compliance is reviewed by the operators at each amendment and on any
+fixes. La versión se incrementa solo cuando se enmienda este documento; los
+cambios de features del producto NO alteran la versión de la constitución.
+Compliance is reviewed by the operators at each amendment and on any
 change that touches persistence, pricing, or the order lifecycle.
 
-**Version**: 1.1.0 | **Ratified**: 2026-07-19 | **Last Amended**: 2026-07-19
+**Version**: 1.1.0 | **Ratified**: 2026-07-19 (fecha de adopción) | **Last Amended**: 2026-07-19 (fecha del último cambio a la constitución; igual a Ratified en la versión inicial)
