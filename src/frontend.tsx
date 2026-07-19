@@ -17,9 +17,10 @@ const app = (
   </StrictMode>
 );
 
-// https://bun.com/docs/bundler/hot-reloading#import-meta-hot-data
+// Recarga manual en dev (sin cliente HMR de Bun). El build de producción
+// (build.ts) no usa import.meta.hot, así que evitamos la dependencia aquí.
 seedDatabase()
   .catch((err) => console.error("Error al inicializar la base de datos", err))
   .finally(() => {
-    (import.meta.hot.data.root ??= createRoot(elem)).render(app);
+    createRoot(elem).render(app);
   });
