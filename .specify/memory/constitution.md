@@ -1,18 +1,23 @@
 <!--
 ## Sync Impact Report
 
-- Version change: (none) → 1.0.0
-- Modified principles: none (initial constitution)
-- Added sections: Core Principles (5), Tech & Persistence Constraints, Operating Model, Governance
+- Version change: 1.0.0 → 1.1.0
+- Modified principles:
+  - I. No-Backend, Local-First Persistence — reworded to allow Dexie as an
+    IndexedDB wrapper (still no backend; IndexedDB remains the only store).
+- Added sections: none
 - Removed sections: none
 - Templates requiring updates:
   - ✅ .specify/templates/constitution-template.md (source of this fill)
-  - ⚠ .specify/templates/plan-template.md — Constitution Check gate should reference Delega principles (manual follow-up)
-  - ✅ .specify/templates/spec-template.md (no principle references; aligned)
-  - ✅ .specify/templates/tasks-template.md (no principle references; aligned)
+  - ⚠ .specify/templates/plan-template.md — Constitution Check gate should
+    reference Delega principles (manual follow-up, deferred)
+  - ✅ .specify/templates/spec-template.md (aligned)
+  - ✅ .specify/templates/tasks-template.md (aligned)
 - Follow-up TODOs:
-  - TODO(RATIFICATION_DATE): set to first real adoption date once known; currently equals creation date.
-  - Plan template Constitution Check still uses generic gate text; tailor to these principles.
+  - TODO(RATIFICATION_DATE): set to first real adoption date once known;
+    currently equals creation date.
+  - Plan template Constitution Check still uses generic gate text; tailor to
+    these principles.
 -->
 
 # Delega Constitution
@@ -25,7 +30,10 @@ All application data MUST be persisted exclusively in the browser via IndexedDB.
 The app MUST run entirely client-side with no server backend, no cloud database,
 and no fixed infrastructure cost. Deployment MUST use a static host (e.g., Vercel)
 serving only the React build. Any feature requiring a server MUST be rejected
-unless the constitution is amended first.
+unless the constitution is amended first. IndexedDB is the only datastore; the
+Dexie library MAY be used as a thin wrapper over the native IndexedDB API to
+reduce boilerplate, but MUST NOT introduce a server, sync service, or remote
+database.
 
 ### II. WhatsApp-First Intake & Human Coordination
 
@@ -96,4 +104,4 @@ principle or materially expanding guidance; PATCH for clarifications and wording
 fixes. Compliance is reviewed by the operators at each amendment and on any
 change that touches persistence, pricing, or the order lifecycle.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-19 | **Last Amended**: 2026-07-19
+**Version**: 1.1.0 | **Ratified**: 2026-07-19 | **Last Amended**: 2026-07-19

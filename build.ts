@@ -5,10 +5,8 @@ import path from "node:path";
 const outdir = path.join(process.cwd(), "dist");
 await rm(outdir, { recursive: true, force: true });
 
-const entrypoints = [...new Bun.Glob("src/**/*.html").scanSync()];
-
 const result = await Bun.build({
-  entrypoints,
+  entrypoints: [path.join(process.cwd(), "src/frontend.tsx")],
   outdir,
   plugins: [tailwind],
   minify: true,

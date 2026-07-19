@@ -1,38 +1,88 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { APITester } from "./APITester";
-import "./index.css";
+import { lazy, Suspense } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { HomePage } from "@/pages/HomePage";
+import { ServicesPage } from "@/pages/ServicesPage";
+import { DelegatePage } from "@/pages/DelegatePage";
+import { ContactPage } from "@/pages/ContactPage";
+import { OrderTrackingPage } from "@/pages/OrderTrackingPage";
+import { LoginPage } from "@/pages/admin/LoginPage";
 
-import logo from "./logo.svg";
-import reactLogo from "./react.svg";
+const AdminLayout = lazy(() =>
+  import("@/pages/admin/AdminLayout").then((m) => ({ default: m.AdminLayout })),
+);
+const DashboardPage = lazy(() =>
+  import("@/pages/admin/DashboardPage").then((m) => ({ default: m.DashboardPage })),
+);
+const OrdersListPage = lazy(() =>
+  import("@/pages/admin/OrdersListPage").then((m) => ({ default: m.OrdersListPage })),
+);
+const OrderDetailPage = lazy(() =>
+  import("@/pages/admin/OrderDetailPage").then((m) => ({ default: m.OrderDetailPage })),
+);
+const ClientsListPage = lazy(() =>
+  import("@/pages/admin/ClientsListPage").then((m) => ({ default: m.ClientsListPage })),
+);
+const ClientDetailPage = lazy(() =>
+  import("@/pages/admin/ClientDetailPage").then((m) => ({ default: m.ClientDetailPage })),
+);
+const SubscriptionsPage = lazy(() =>
+  import("@/pages/admin/SubscriptionsPage").then((m) => ({ default: m.SubscriptionsPage })),
+);
+const ActivityLogPage = lazy(() =>
+  import("@/pages/admin/ActivityLogPage").then((m) => ({ default: m.ActivityLogPage })),
+);
+const StatisticsPage = lazy(() =>
+  import("@/pages/admin/StatisticsPage").then((m) => ({ default: m.StatisticsPage })),
+);
+
+function AdminGuard({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/admin/login" replace />;
+  return <>{children}</>;
+}
+
+function AdminRoutes() {
+  return (
+    <Suspense fallback={<div className="p-8">Cargando…</div>}>
+      <Routes>
+        <Route element={<AdminLayout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="ordenes" element={<OrdersListPage />} />
+          <Route path="ordenes/:id" element={<OrderDetailPage />} />
+          <Route path="clientes" element={<ClientsListPage />} />
+          <Route path="clientes/:phone" element={<ClientDetailPage />} />
+          <Route path="suscripciones" element={<SubscriptionsPage />} />
+          <Route path="activity-log" element={<ActivityLogPage />} />
+          <Route path="estadisticas" element={<StatisticsPage />} />
+        </Route>
+      </Routes>
+    </Suspense>
+  );
+}
 
 export function App() {
   return (
-    <div className="container mx-auto p-8 text-center relative z-10">
-      <div className="flex justify-center items-center gap-8 mb-8">
-        <img
-          src={logo}
-          alt="Bun Logo"
-          className="h-36 p-6 transition-all duration-300 hover:drop-shadow-[0_0_2em_#646cffaa] scale-120"
-        />
-        <img
-          src={reactLogo}
-          alt="React Logo"
-          className="h-36 p-6 transition-all duration-300 hover:drop-shadow-[0_0_2em_#61dafbaa] [animation:spin_20s_linear_infinite]"
-        />
-      </div>
-      <Card>
-        <CardHeader className="gap-4">
-          <CardTitle className="text-3xl font-bold">Bun + React</CardTitle>
-          <CardDescription>
-            Edit <code className="rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono">src/App.tsx</code> and save to
-            test HMR
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <APITester />
-        </CardContent>
-      </Card>
-    </div>
+    <BrowserRouter>
+      <Suspense fallback={<div className="p-8">Cargando…</div>}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/servicios" element={<ServicesPage />} />
+          <Route path="/delegar" element={<DelegatePage />} />
+          <Route path="/contacto" element={<ContactPage />} />
+          <Route path="/orden/:token" element={<OrderTrackingPage />} />
+          <Route path="/admin/login" element={<LoginPage />} />
+          <Route
+            path="/admin/*"
+            element={
+              <AdminGuard>
+                <AdminRoutes />
+              </AdminGuard>
+            }
+          />
+        </Routes>
+      </Suspense>
+    </BrowserRouter>
   );
 }
 
