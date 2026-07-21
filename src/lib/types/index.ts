@@ -22,6 +22,8 @@ export type OrderStatus =
   | "completada"
   | "cancelada";
 
+export type PaymentStatus = "unpaid" | "partial" | "paid";
+
 export type SubscriptionType = "basico" | "pro" | "creativo" | "full";
 
 export type SubscriptionStatus = "activa" | "vencida" | "cancelada";
@@ -34,6 +36,7 @@ export type ActionType =
   | "delete_order"
   | "add_note"
   | "upload_file"
+  | "delete_attachment"
   | "change_status"
   | "create_subscription"
   | "cancel_subscription";
@@ -79,14 +82,27 @@ export interface Subscription {
 }
 
 export interface OrderNote {
+  id: string;
   text: string;
   author: string;
   at: string;
 }
 
-export interface OrderFile {
+export interface StatusTransition {
+  from: OrderStatus;
+  to: OrderStatus;
+  by: string;
+  at: number;
+}
+
+export interface OrderAttachment {
+  id: string;
+  orderId: string;
   name: string;
+  mime: string;
+  size: number;
   blob: Blob;
+  author: string;
   uploadedAt: string;
 }
 
@@ -171,12 +187,14 @@ export interface Order {
   totalPaid: number;
   paymentRef: string;
   status: OrderStatus;
+  urgent: boolean;
+  paymentStatus: PaymentStatus;
   createdAt: string;
   dueDate: string | null;
   completedAt: string | null;
   notes: OrderNote[];
+  statusHistory: StatusTransition[];
   subscriptionId: string | null;
-  files: OrderFile[];
 }
 
 export interface OperatorStats {
@@ -211,6 +229,7 @@ export interface Config {
   orderCounter: number;
   subscriptionCounter: number;
   priceRanges: PriceRanges;
+  serviceOperatorMap: Record<ServiceType, string>;
   createdAt: number;
   updatedAt: number;
 }

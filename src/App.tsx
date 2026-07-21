@@ -20,6 +20,9 @@ const OrdersListPage = lazy(() =>
 const OrderDetailPage = lazy(() =>
   import("@/pages/admin/OrderDetailPage").then((m) => ({ default: m.OrderDetailPage })),
 );
+const OrderCreatePage = lazy(() =>
+  import("@/pages/admin/OrderCreatePage").then((m) => ({ default: m.OrderCreatePage })),
+);
 const ClientsListPage = lazy(() =>
   import("@/pages/admin/ClientsListPage").then((m) => ({ default: m.ClientsListPage })),
 );
@@ -59,6 +62,7 @@ function AdminRoutes() {
         <Route element={<AdminLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="ordenes" element={<OrdersListPage />} />
+          <Route path="ordenes/nueva" element={<OrderCreatePage />} />
           <Route path="ordenes/:id" element={<OrderDetailPage />} />
           <Route path="clientes" element={<ClientsListPage />} />
           <Route path="clientes/:phone" element={<ClientDetailPage />} />

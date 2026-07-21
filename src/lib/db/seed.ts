@@ -20,6 +20,14 @@ function defaultConfig(): Config {
       diseno: { min: 3, max: 15 },
       video: { min: 3, max: 15 },
     },
+    serviceOperatorMap: {
+      ensayo: "op_001",
+      presentacion: "op_001",
+      investigacion: "op_001",
+      formato: "op_002",
+      diseno: "op_002",
+      video: "op_002",
+    },
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };

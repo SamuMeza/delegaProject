@@ -6,6 +6,7 @@ import type {
   MonthlyStats,
   Operator,
   Order,
+  OrderAttachment,
   Subscription,
 } from "@/lib/types";
 
@@ -16,6 +17,7 @@ export class DelegaDB extends Dexie {
   clients!: Table<Client, string>;
   subscriptions!: Table<Subscription, string>;
   orders!: Table<Order, string>;
+  order_attachments!: Table<OrderAttachment, string>;
   stats!: Table<MonthlyStats, string>;
   activity_log!: Table<ActivityLogEntry, string>;
   config!: Table<Config, string>;
@@ -27,6 +29,7 @@ export class DelegaDB extends Dexie {
       clients: "phone",
       subscriptions: "id, clientPhone",
       orders: "id, clientPhone, operatorId, status, subscriptionId",
+      order_attachments: "id, orderId, name",
       stats: "id",
       activity_log: "id, operatorId, targetId",
       config: "id",

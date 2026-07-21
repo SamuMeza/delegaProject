@@ -13,6 +13,12 @@ un panel administrativo privado.
   `index.html` para que React Router funcione.
 - **Stack:** React 19, React Router 7, Zustand 5, Dexie 4, Tailwind CSS 4,
   shadcn/ui (Radix), lucide-react, tw-animate-css.
+- **Service Operator Map (serviceOperatorMap):**  
+  This is a configuration key in `Config` that maps `ServiceType` to `OperatorId`.
+  It allows administrators to assign which operator handles each service type
+  without requiring code changes. The configuration lives in `src/lib/db/seed.ts`
+  where default mappings are defined, but can be overridden through the
+  Configuration API. The mapping is crucial for order assignment logic.
 
 ## Desarrollo
 
