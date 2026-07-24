@@ -20,14 +20,20 @@ function defaultConfig(): Config {
       diseno: { min: 3, max: 15 },
       video: { min: 3, max: 15 },
     },
-    serviceOperatorMap: {
-      ensayo: "op_001",
-      presentacion: "op_001",
-      investigacion: "op_001",
-      formato: "op_002",
-      diseno: "op_002",
-      video: "op_002",
+    faqs: [
+      { question: "¿Cómo funciona el servicio?", answer: "Seleccionas el tipo de trabajo, completas los detalles, envías la solicitud por WhatsApp y un operador te contacta." },
+      { question: "¿Cuánto tiempo toma?", answer: "Depende del tipo de trabajo. Generalmente entregamos en 24-72 horas." },
+      { question: "¿Cómo realizo el pago?", answer: "Aceptamos Pago Móvil. Los datos bancarios los encuentras en esta sección." },
+    ],
+    pagoMovil: {
+      bank: "Banco de Venezuela",
+      rif: "J-12345678-9",
+      phone: "04141234567",
     },
+    disclaimers: [
+      "Los trabajos son de carácter académico y no deben ser presentados como propios.",
+      "Los precios están en USD y se cancelan en BS al tipo de cambio del día.",
+    ],
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
