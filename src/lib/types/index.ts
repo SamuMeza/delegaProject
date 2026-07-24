@@ -35,7 +35,9 @@ export type OrderStatus =
 
 export type SubscriptionType = "basico" | "pro" | "creativo" | "full";
 
-export type SubscriptionStatus = "activa" | "vencida" | "cancelada";
+export type SubscriptionStatus = "activa" | "vencida" | "cancelada" | "reemplazada";
+
+export type CoverageTipo = "estandar" | "cubierta_por_suscripcion" | "suelta_con_descuento";
 
 export type ActionType =
   | "login"
@@ -46,8 +48,11 @@ export type ActionType =
   | "add_note"
   | "upload_file"
   | "change_status"
+  | "create_client"
+  | "update_client"
   | "create_subscription"
-  | "cancel_subscription";
+  | "cancel_subscription"
+  | "renew_subscription";
 
 export interface Operator {
   id: string;
@@ -71,6 +76,8 @@ export interface SubscriptionEmbedded {
 export interface Client {
   phone: string;
   name: string;
+  email?: string;
+  notes?: string;
   totalOrders: number;
   totalSpent: number;
   subscription: SubscriptionEmbedded | null;
@@ -187,6 +194,7 @@ export interface Order {
   completedAt: string | null;
   notes: OrderNote[];
   subscriptionId: string | null;
+  coverageTipo: CoverageTipo;
   files: OrderFile[];
 }
 

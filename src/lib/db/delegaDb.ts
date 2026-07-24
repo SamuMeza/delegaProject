@@ -10,8 +10,6 @@ import type {
   Subscription,
 } from "@/lib/types";
 
-// Base de datos local (IndexedDB vía Dexie). Manual técnico §2.1-§2.2.
-// Fuente de verdad persistente del cliente. No hay backend.
 export class DelegaDB extends Dexie {
   operators!: Table<Operator, string>;
   clients!: Table<Client, string>;
@@ -30,6 +28,15 @@ export class DelegaDB extends Dexie {
       subscriptions: "id, clientPhone",
       orders: "id, clientPhone, operatorId, status, subscriptionId",
       order_attachments: "id, orderId, name",
+      stats: "id",
+      activity_log: "id, operatorId, targetId",
+      config: "id",
+    });
+    this.version(2).stores({
+      clients: "phone, name",
+      subscriptions: "id, clientPhone, status",
+      orders: "id, clientPhone, operatorId, status, subscriptionId, coverageTipo",
+      operators: "id, username",
       stats: "id",
       activity_log: "id, operatorId, targetId",
       config: "id",

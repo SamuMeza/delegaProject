@@ -1,3 +1,7 @@
+import { useLiveQuery } from "dexie-react-hooks";
+import { Link } from "react-router-dom";
+import { AlertTriangle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useConfig } from "@/hooks/useDelegaDB";
 import { useOrders } from "@/hooks/useDelegaDB";
 import {
@@ -9,25 +13,27 @@ import {
   isOverdue,
   formatDueDate,
 } from "@/lib/orders/ui";
+import { db } from "@/lib/db/delegaDb";
+
+function daysUntil(dateStr: string): number {
+  return Math.ceil((new Date(dateStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+}
 
 export function DashboardPage() {
   const config = useConfig();
   const orders = useOrders();
 
-  // Calcular estadísticas mensuales
   const today = new Date();
   const currentMonth = today.toLocaleString("es-VE", { month: "short", year: "numeric" });
   const monthlyOrders = orders?.filter(
     (order) => new Date(order.createdAt).toLocaleString("es-VE", { month: "short", year: "numeric" }) === currentMonth
   ) ?? [];
 
-  // Contar por estado (desglosado)
   const byStatus = Object.entries(ORDER_STATUS_LABELS).reduce((acc, [status, label]) => {
     acc[status] = monthlyOrders.filter((o) => o.status === status).length;
     return acc;
   }, {});
 
-  // Contar por operador y estado
   const byOperator: Record<string, { total: number; completed: number; pending: number; updatings: number; cancels: number }> = {};
   monthlyOrders.forEach((order) => {
     const opName = order.operatorId.replace("op_", "");
@@ -39,21 +45,76 @@ export function DashboardPage() {
     if (order.status === "cancelada") byOperator[opName].cancels += 1;
   });
 
-  // Pago Móvil tracking
   const paymentStatusCounts = Object.entries(PAYMENT_STATUS_LABELS as any).reduce((acc, [status, label]) => {
     acc[status] = monthlyOrders.filter((o) => o.paymentStatus === (status as keyof typeof PAYMENT_STATUS_LABELS)).length ?? 0;
     return acc;
   }, {});
 
+  const renewals = useLiveQuery(
+    () =>
+      db.transaction("r", db.subscriptions, db.clients, async () => {
+        const subs = await db.subscriptions
+          .where("status")
+          .equals("activa")
+          .toArray();
+        const nearEnd = subs
+          .filter((s) => {
+            const d = daysUntil(s.endDate);
+            return d >= 0 && d <= 15;
+          })
+          .sort((a, b) => daysUntil(a.endDate) - daysUntil(b.endDate));
+        const phones = [...new Set(nearEnd.map((s) => s.clientPhone))];
+        const clients = await db.clients.bulkGet(phones);
+        const nameMap = new Map<string, string>();
+        for (const c of clients) {
+          if (c) nameMap.set(c.phone, c.name);
+        }
+        return nearEnd.map((s) => ({
+          ...s,
+          clientName: nameMap.get(s.clientPhone) ?? s.clientPhone,
+        }));
+      }),
+    [],
+    [],
+  );
+
   return (
-    <main className="p-8">
+    <main className="p-8 space-y-6">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+
+      {renewals.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-amber-600">
+              <AlertTriangle className="h-5 w-5" />
+              Suscripciones próximas a vencer
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {renewals.map((sub) => {
+                const d = daysUntil(sub.endDate);
+                return (
+                  <li key={sub.id} className="flex items-center justify-between text-sm">
+                    <Link to={`/admin/clientes/${sub.clientPhone}`} className="text-primary hover:underline">
+                      {sub.clientName}
+                    </Link>
+                    <span className="text-muted-foreground">
+                      Vence en {d} día{d !== 1 ? "s" : ""} ({sub.endDate})
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      <p className="text-sm text-muted-foreground">
         Sesión expira tras {config?.sessionTimeoutHours ?? "—"} hora(s) de inactividad.
       </p>
 
       <section className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {/* Estadísticas mensuales */}
         <div className="rounded-lg border p-4">
           <h2 className="text-sm font-medium">Mes actual: {currentMonth}</h2>
           <div className="mt-2 grid gap-4 sm:grid-cols-2">
@@ -64,7 +125,6 @@ export function DashboardPage() {
           </div>
         </div>
 
-        {/* Resumen por estado */}
         {Object.entries(byStatus).map(([status, count]) => (
           <div key={status} className="rounded-lg border p-2">
             <div className={`text-sm font-medium ${ORDER_STATUS_CLASSES[status as keyof typeof ORDER_STATUS_LABELS]}`}>
@@ -74,7 +134,6 @@ export function DashboardPage() {
           </div>
         ))}
 
-        {/* Desglosado por operador */}
         {Object.entries(byOperator).map(([opName, stats]) => (
           <div key={opName} className="rounded-lg border p-2">
             <div className="text-sm font-medium">Operador: {opName}</div>
@@ -87,7 +146,6 @@ export function DashboardPage() {
         ))}
       </section>
 
-      {/* Dashboard month='calendar month' */}
       <div className="mt-12">
         <h2 className="text-sm font-medium">Opciones avanzadas</h2>
         <div className="mt-2 flex items-center gap-2">

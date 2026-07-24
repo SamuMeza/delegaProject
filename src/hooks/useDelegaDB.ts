@@ -1,9 +1,6 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db/delegaDb";
-import type { Config, Operator, Order, OrderAttachment, OrderStatus } from "@/lib/types";
-
-// Abstracción reactiva sobre Dexie (spec §FR-3, research.md §R6).
-// Las pantallas usan estos helpers en lugar de tocar Dexie directamente.
+import type { Client, Config, Operator, Order, OrderAttachment, OrderStatus, Subscription } from "@/lib/types";
 
 export function useOperators(): Operator[] | undefined {
   return useLiveQuery(() => db.operators.toArray(), []);
@@ -57,6 +54,28 @@ export function useAttachments(orderId: string | undefined): OrderAttachment[] |
   );
 }
 
+export function useClients(): Client[] | undefined {
+  return useLiveQuery(() => db.clients.toArray(), []);
+}
+
+export function useClient(phone: string | undefined): Client | undefined {
+  return useLiveQuery(
+    () => (phone ? db.clients.get(phone) : undefined),
+    [phone],
+  );
+}
+
+export function useSubscriptions(): Subscription[] | undefined {
+  return useLiveQuery(() => db.subscriptions.toArray(), []);
+}
+
+export function useClientSubscriptions(phone: string | undefined): Subscription[] | undefined {
+  return useLiveQuery(
+    () => (phone ? db.subscriptions.where("clientPhone").equals(phone).toArray() : undefined),
+    [phone],
+  );
+}
+
 export async function upsertOperator(op: Operator): Promise<void> {
   await db.operators.put(op);
 }
@@ -74,6 +93,10 @@ export function useDelegaDB() {
     useOrders,
     useOrder,
     useAttachments,
+    useClients,
+    useClient,
+    useSubscriptions,
+    useClientSubscriptions,
     upsertOperator,
     updateConfig,
   };
