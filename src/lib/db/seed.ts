@@ -1,6 +1,6 @@
 import { db } from "@/lib/db/delegaDb";
 import { env } from "@/lib/config/env";
-import type { Config, Operator } from "@/lib/types";
+import type { Client, Config, Operator } from "@/lib/types";
 
 const CONFIG_ID = "app";
 const SEED_PASSWORD = "cambia_este_hash";
@@ -58,4 +58,49 @@ export async function seedDatabase(): Promise<void> {
   if (operatorCount === 0) {
     await db.operators.bulkAdd(seedOperators());
   }
+
+  const clientCount = await db.clients.count();
+  if (clientCount === 0) {
+    await seedClients();
+  }
+}
+
+function seedClients(): Promise<unknown> {
+  const now = new Date().toISOString().split("T")[0];
+  const endDate = new Date();
+  endDate.setMonth(endDate.getMonth() + 3);
+  const endStr = endDate.toISOString().split("T")[0];
+  const key = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+
+  const clients: Client[] = [
+    {
+      phone: "0412-1234567",
+      name: "María Pérez",
+      email: "maria@ejemplo.com",
+      notes: "Estudiante universitaria, referida por amiga",
+      totalOrders: 3,
+      totalSpent: 27,
+      subscription: {
+        type: "pro",
+        startDate: now,
+        endDate: endStr,
+        price: 25,
+        status: "activa",
+        monthlyQuota: 5,
+        usedPerMonth: { [key]: 2 },
+      },
+      history: [],
+    },
+    {
+      phone: "0414-7654321",
+      name: "Carlos López",
+      email: "carlos@ejemplo.com",
+      totalOrders: 1,
+      totalSpent: 10,
+      subscription: null,
+      history: [],
+    },
+  ];
+
+  return db.clients.bulkAdd(clients);
 }
