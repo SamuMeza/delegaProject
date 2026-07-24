@@ -15,4 +15,7 @@ export const env = {
   operator2User: get("BUN_PUBLIC_OPERATOR_2_USER"),
   operator2PassHash: get("BUN_PUBLIC_OPERATOR_2_PASS_HASH"),
   operator2Name: get("BUN_PUBLIC_OPERATOR_2_NAME") ?? "Operador 2",
+  whatsappNumber: get("BUN_PUBLIC_WHATSAPP_NUMBER") ?? "584121234567",
+  trackingSalt: get("BUN_PUBLIC_TRACKING_SALT") ?? "delega-default-salt",
+  sessionTimeoutHours: Number(get("BUN_PUBLIC_SESSION_TIMEOUT_HOURS") ?? "8"),
 };

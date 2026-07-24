@@ -5,6 +5,17 @@ export type OperatorRole = "operator";
 
 export type PriceRanges = Record<string, { min: number; max: number }>;
 
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface PagoMovilInfo {
+  bank: string;
+  rif: string;
+  phone: string;
+}
+
 export type ServiceType =
   | "ensayo"
   | "presentacion"
@@ -211,6 +222,9 @@ export interface Config {
   orderCounter: number;
   subscriptionCounter: number;
   priceRanges: PriceRanges;
+  faqs: FaqItem[];
+  pagoMovil: PagoMovilInfo;
+  disclaimers: string[];
   createdAt: number;
   updatedAt: number;
 }

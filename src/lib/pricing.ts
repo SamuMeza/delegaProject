@@ -1,27 +1,57 @@
 import type { ServiceType } from "@/lib/types";
+import { getServiceConfig } from "@/lib/config/serviceTypes";
 
-// Cálculo de precio (manual §9.2). Skeleton de preparación de terreno.
-// Precios base por variante de servicio. La urgencia (+50%) y la suscripción
-// ($0 dentro de cupo) se aplican en la fase de features.
-
-export const BASE_PRICES: Record<string, number> = {
-  "ensayo_1-3": 3,
-  "ensayo_4-7": 5,
-  "presentacion_hasta-10": 4,
-  "presentacion_11-20": 6,
-  "investigacion": 5,
-  "formato": 2,
-  "diseno": 3,
-  "video_corto-redes": 8,
-  "video_presentacion": 15,
-  "video_publicitario": 12,
-  "video_educativo": 10,
+const ADJUSTMENTS: Record<string, Record<string, number>> = {
+  ensayo: {
+    "paginas:8+": 3,
+    "wordCount:2000+": 2,
+    "academicLevel:postgrado": 2,
+    "academicLevel:pregrado": 1,
+  },
+  presentacion: {
+    "slideCount:20+": 2,
+    "audienceLevel:avanzado": 2,
+    "audienceLevel:intermedio": 1,
+  },
+  investigacion: {
+    "wordCount:3000+": 2,
+    "academicLevel:postgrado": 2,
+    "sourceCount:10+": 2,
+  },
+  formato: {},
+  diseno: {
+    "designType:logo": 2,
+    "designType:infographic": 1,
+  },
+  video: {
+    "duration:mas": 3,
+    "duration:3-5min": 2,
+    "resolution:4k": 2,
+    "resolution:1080p": 1,
+  },
 };
 
-export function estimatePrice(
-  serviceType: ServiceType,
-  variant: string,
-): number {
-  const key = `${serviceType}_${variant}`;
-  return BASE_PRICES[key] ?? BASE_PRICES[serviceType] ?? 0;
+export function estimatePrice(serviceType: ServiceType, params?: Record<string, unknown>): number {
+  const config = getServiceConfig(serviceType);
+  if (!config) return 0;
+
+  let price = config.basePrice;
+  const adjustments = ADJUSTMENTS[serviceType];
+
+  if (params && adjustments) {
+    for (const [key, value] of Object.entries(params)) {
+      if (value === undefined || value === "") continue;
+      const strVal = String(value);
+      const adjustmentKey = `${key}:${strVal}`;
+      if (adjustments[adjustmentKey]) {
+        price += adjustments[adjustmentKey];
+      }
+    }
+  }
+
+  return price;
+}
+
+export function formatPrice(price: number): string {
+  return `$${price.toFixed(0)}`;
 }
