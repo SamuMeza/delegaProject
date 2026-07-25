@@ -38,6 +38,9 @@ const ActivityLogPage = lazy(() =>
 const StatisticsPage = lazy(() =>
   import("@/pages/admin/StatisticsPage").then((m) => ({ default: m.StatisticsPage })),
 );
+const ExportPage = lazy(() =>
+  import("@/pages/admin/ExportPage").then((m) => ({ default: m.ExportPage })),
+);
 
 function AdminGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -69,6 +72,7 @@ function AdminRoutes() {
           <Route path="suscripciones" element={<SubscriptionsPage />} />
           <Route path="activity-log" element={<ActivityLogPage />} />
           <Route path="estadisticas" element={<StatisticsPage />} />
+          <Route path="exportar" element={<ExportPage />} />
         </Route>
       </Routes>
     </Suspense>

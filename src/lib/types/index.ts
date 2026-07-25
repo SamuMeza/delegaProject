@@ -52,7 +52,8 @@ export type ActionType =
   | "update_client"
   | "create_subscription"
   | "cancel_subscription"
-  | "renew_subscription";
+  | "renew_subscription"
+  | "delete_attachment";
 
 export interface Operator {
   id: string;

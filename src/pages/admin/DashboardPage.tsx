@@ -1,7 +1,8 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { Link } from "react-router-dom";
-import { AlertTriangle, AlertTriangle as AlertIcon } from "lucide-react";
+import { AlertTriangle, AlertTriangle as AlertIcon, ScrollText, BarChart3, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useConfig } from "@/hooks/useDelegaDB";
 import { useOrders } from "@/hooks/useDelegaDB";
 import {
@@ -81,8 +82,29 @@ export function DashboardPage() {
   );
 
   return (
-    <main className="p-8 space-y-6">
+    <main className="p-4 md:p-8 space-y-6">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
+
+      <div className="flex flex-wrap gap-3">
+        <Link to="/admin/activity-log">
+          <Button variant="outline" size="sm">
+            <ScrollText className="mr-2 h-4 w-4" />
+            Log de actividad
+          </Button>
+        </Link>
+        <Link to="/admin/estadisticas">
+          <Button variant="outline" size="sm">
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Estadísticas
+          </Button>
+        </Link>
+        <Link to="/admin/exportar">
+          <Button variant="outline" size="sm">
+            <Download className="mr-2 h-4 w-4" />
+            Exportar datos
+          </Button>
+        </Link>
+      </div>
 
 {renewals.length > 0 && (
          <Card>

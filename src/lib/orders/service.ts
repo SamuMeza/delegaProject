@@ -98,6 +98,12 @@ export async function createOrder(
     }
   });
 
+  window.dispatchEvent(
+    new CustomEvent("delega:order-created", {
+      detail: { orderId: orderId!, clientName: input.clientName },
+    }),
+  );
+
   return orderId!;
 }
 

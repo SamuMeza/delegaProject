@@ -15,7 +15,7 @@ export async function logActivity(params: {
     operatorId: params.operatorId,
     action: params.action,
     targetId: params.targetId,
-    details: params.details,
+    details: params.details.slice(0, 200),
     timestamp: new Date().toISOString(),
   });
 }

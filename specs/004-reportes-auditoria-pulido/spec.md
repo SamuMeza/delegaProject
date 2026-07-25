@@ -96,19 +96,18 @@ Un operador quiere poder usar el panel desde un teléfono o tablet cuando no est
 - ¿Qué pasa cuando se exporta el backup con 0 registros? El archivo JSON debe ser válido con arrays vacíos, no fallar.
 - ¿Qué pasa si hay muchas acciones en el Activity Log (miles)? La vista debe paginarse o virtualizarse para no degradar el rendimiento.
 - ¿Qué pasa si el navegador no soporta Notificaciones API o el usuario las bloqueó? La notificación sonora debe fallar silenciosamente sin romper el panel.
-- ¿Qué pasa si el operador usa el panel en un dispositivo muy pequeño (< 320px)? Debe seguir siendo funcional aunque algunos elementos se reorganicen.
+- ¿Qué pasa si el operador usa el panel en un dispositivo muy pequeño (< 320px)? El panel fuera del rango especificado (FR-008: 320px-1920px) debe degradarse graceful — contenido reorganizado, sin pérdida de funcionalidad crítica, aunque algunos elementos pueden requerir scroll horizontal.
 
 ## Requirements
 
 ### Functional Requirements
 
-- **FR-001** (Activity Log): El sistema DEBE registrar cada acción del operador con: timestamp, operador, tipo de acción, ID del recurso afectado y descripción legible, y persistirlo en IndexedDB.
+- **FR-001** (Activity Log): El sistema DEBE registrar cada acción del operador con: timestamp, operador, tipo de acción, ID del recurso afectado y descripción legible (cadena de texto en español, máximo 200 caracteres, incluye nombre del cliente o recurso afectado cuando sea aplicable), y persistirlo en IndexedDB.
 - **FR-002** (Activity Log): El sistema DEBE ofrecer una vista que liste las acciones en orden cronológico descendente con filtros combinables por: operador, tipo de acción y rango de fechas.
 - **FR-003** (Activity Log): La vista DEBE paginar los resultados (máximo 50 por página) y mostrar el total de acciones encontradas.
 - **FR-004** (Estadísticas): El sistema DEBE mostrar un resumen del mes actual con: total de órdenes, desglose por estado, distribución por operador, e ingreso estimado basado en precios de órdenes y suscripciones activas.
 - **FR-005** (Exportación): El sistema DEBE permitir al operador descargar un archivo JSON con todos los registros de IndexedDB mediante un solo clic. El archivo DEBE contener cada tabla como un array de objetos.
-- **FR-006** (Notificaciones): El sistema DEBE alertar al operador sobre nuevas órdenes mediante: notificación visual en pantalla (toast), sonido breve, e indicador en el título de la pestaña.
-- **FR-007** (Notificaciones): La notificación DEBE ser no intrusiva — no requiere acción del usuario para desaparecer y no bloquea la interacción con el panel.
+- **FR-006** (Notificaciones): El sistema DEBE alertar al operador sobre nuevas órdenes mediante: notificación visual en pantalla (toast, auto-dismiss 5 segundos, no intrusiva), sonido breve (0.5-2 segundos, tono distintivo no intrusivo), e indicador en el título de la pestaña.
 - **FR-008** (Responsive): El panel DEBE ser funcional en viewports desde 320px hasta 1920px de ancho sin scroll horizontal.
 - **FR-009** (Accesibilidad): Todos los elementos interactivos DEBEN ser accesibles por teclado con orden lógico de tabulación y foco visible.
 - **FR-010** (Accesibilidad): El contraste de color DEBE cumplir la relación mínima 4.5:1 para texto normal y 3:1 para texto grande.
@@ -122,11 +121,11 @@ Un operador quiere poder usar el panel desde un teléfono o tablet cuando no est
 
 ### Measurable Outcomes
 
-- **SC-001**: Un operador puede encontrar una acción específica en el Activity Log usando filtros en menos de 10 segundos.
-- **SC-002**: El Activity Log paginado no degrada la experiencia incluso con 10,000+ registros.
-- **SC-003**: Las estadísticas mensuales reflejan correctamente el total de órdenes, distribución por operador e ingresos sin error de cálculo.
-- **SC-004**: La exportación de backup descarga un archivo de datos válido en menos de 1 segundo para hasta 10 MB de datos, conteniendo todos los registros del sistema.
-- **SC-005**: Una nueva orden genera notificación visual y sonora en menos de 2 segundos desde que se persiste en la base de datos.
+- **SC-001** (User Experience): Un operador puede encontrar una acción específica en el Activity Log usando filtros con tiempo de respuesta <10 segundos desde que aplica el filtro hasta que se muestran los resultados (percibido por el usuario).
+- **SC-002** (Technical): El Activity Log paginado mantiene scroll a 60fps y respuesta de filtros <500ms incluso con 10,000+ registros (métrica técnica de renderizado).
+- **SC-003**: Las estadísticas mensuales reflejan exactamente el total de órdenes, distribución por operador e ingresos (coincidencia 1:1 con cálculo manual, sin errores de redondeo ni truncamiento).
+- **SC-004**: La exportación de backup descarga un archivo JSON válido (sintaxis correcta, tipos de datos preservados) en menos de 1 segundo para hasta 10 MB de datos, conteniendo todos los registros del sistema (orders, clients, subscriptions, activityLog, operators, config).
+- **SC-005**: Una nueva orden genera notificación visual (toast visible) y sonora en menos de 2 segundos desde que se confirma la persistencia en IndexedDB (después de completar la transacción de escritura).
 - **SC-006**: El panel es navegable por teclado al 100% — todos los elementos funcionales reciben foco en orden predecible.
 - **SC-007**: No hay contenido cortado o con scroll horizontal en viewports de 375px, 768px y 1024px.
 

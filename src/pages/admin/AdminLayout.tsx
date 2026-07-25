@@ -1,6 +1,9 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { LogOut, LayoutDashboard, ClipboardList, Users, CreditCard, BarChart3, ScrollText } from "lucide-react";
+import { useEffect } from "react";
+import { LogOut, LayoutDashboard, ClipboardList, Users, CreditCard, BarChart3, ScrollText, Download } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotifications } from "@/hooks/useNotifications";
+import { NotificationToast } from "@/components/NotificationToast";
 import { Button } from "@/components/ui/button";
 
 const SIDEBAR = [
@@ -10,11 +13,25 @@ const SIDEBAR = [
   { to: "/admin/suscripciones", label: "Suscripciones", icon: CreditCard, end: false },
   { to: "/admin/estadisticas", label: "Estadísticas", icon: BarChart3, end: false },
   { to: "/admin/activity-log", label: "Log de actividad", icon: ScrollText, end: false },
+  { to: "/admin/exportar", label: "Exportar", icon: Download, end: false },
 ];
 
 export function AdminLayout() {
   const { session, logout } = useAuth();
   const navigate = useNavigate();
+  const { lastNotification, clearTabIndicator, notify } = useNotifications();
+
+  useEffect(() => {
+    function handleOrderCreated(e: Event) {
+      const detail = (e as CustomEvent).detail;
+      notify(
+        "Nueva orden creada",
+        `${detail.orderId} — ${detail.clientName}`,
+      );
+    }
+    window.addEventListener("delega:order-created", handleOrderCreated);
+    return () => window.removeEventListener("delega:order-created", handleOrderCreated);
+  }, [notify]);
 
   function handleLogout() {
     logout();
@@ -23,9 +40,12 @@ export function AdminLayout() {
 
   return (
     <div className="flex min-h-screen">
-      <aside className="w-64 shrink-0 border-r bg-card p-4">
+      <a href="#main-content" className="skip-link">
+        Saltar al contenido principal
+      </a>
+      <aside className="w-64 shrink-0 border-r bg-card p-4" role="complementary">
         <p className="px-2 py-3 text-lg font-semibold">Delega</p>
-        <nav className="mt-2 space-y-1">
+        <nav className="mt-2 space-y-1" aria-label="Navegación principal">
           {SIDEBAR.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
@@ -57,9 +77,17 @@ export function AdminLayout() {
           </Button>
         </header>
 
-        <main className="flex-1 overflow-auto bg-muted/20">
+        <main id="main-content" className="flex-1 overflow-auto bg-muted/20" role="main">
           <Outlet />
         </main>
+
+        {lastNotification && (
+          <NotificationToast
+            title={lastNotification.title}
+            body={lastNotification.body}
+            onDismiss={clearTabIndicator}
+          />
+        )}
       </div>
     </div>
   );
