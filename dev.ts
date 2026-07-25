@@ -1,6 +1,5 @@
 import tailwind from "bun-plugin-tailwind";
 import { join } from "node:path";
-import { networkInterfaces } from "node:os";
 
 // Servidor de desarrollo mínimo (Opción A).
 // Sirve src/index.html y transpila los módulos .tsx/.ts/.css al navegador
@@ -9,17 +8,6 @@ import { networkInterfaces } from "node:os";
 
 const ROOT = process.cwd();
 const SRC = join(ROOT, "src");
-
-// CLI flags
-const args = process.argv.slice(2);
-const flag = (name: string) => args.includes(`--${name}`) || args.includes(`-${name.charAt(0)}`);
-const param = (name: string) => {
-  const i = args.indexOf(`--${name}`);
-  return i !== -1 ? args[i + 1] : undefined;
-};
-
-const HOSTNAME = flag("host") ? "0.0.0.0" : "localhost";
-const PORT = parseInt(param("port") || "3000", 10);
 
 const CSS_CACHE: Record<string, string> = {};
 
@@ -47,8 +35,7 @@ async function buildAndGetCSS(filePath: string): Promise<string | null> {
 }
 
 const server = Bun.serve({
-  port: PORT,
-  hostname: HOSTNAME,
+  port: 3000,
   async fetch(req) {
     const url = new URL(req.url);
     let pathname = decodeURIComponent(url.pathname);
@@ -122,12 +109,4 @@ const server = Bun.serve({
   },
 });
 
-console.log(`\nDelega Dev Server en http://localhost:${server.port}`);
-if (flag("host")) {
-  console.log(`Accesible en la red: http://0.0.0.0:${server.port}`);
-  const nets = Object.values(networkInterfaces()).flat().filter((n: any) => n.family === "IPv4" && !n.internal);
-  for (const n of nets) {
-    console.log(`  → http://${n.address}:${server.port}`);
-  }
-}
-console.log();
+console.log(`Dev server en http://localhost:${server.port}`);
