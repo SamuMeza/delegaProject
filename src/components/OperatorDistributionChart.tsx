@@ -7,7 +7,7 @@ export function OperatorDistributionChart({ data }: Props) {
 
   if (entries.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
+      <div className="text-center py-8 text-on-surface-variant">
         Sin datos de operadores
       </div>
     );
@@ -21,11 +21,11 @@ export function OperatorDistributionChart({ data }: Props) {
         <div key={operatorId} className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium">{operatorId}</span>
-            <span className="text-muted-foreground">
+            <span className="text-on-surface-variant">
               {stats.orders} órdenes · ${stats.revenue.toLocaleString()}
             </span>
           </div>
-          <div className="h-3 bg-muted rounded-full overflow-hidden">
+          <div className="h-3 bg-surface-container-high rounded-full overflow-hidden">
             <div
               className="h-full bg-primary transition-all duration-500"
               style={{

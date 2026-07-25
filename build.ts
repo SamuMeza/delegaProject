@@ -12,6 +12,7 @@ const result = await Bun.build({
   minify: true,
   target: "browser",
   sourcemap: "linked",
+  splitting: true,
   define: {
     "process.env.NODE_ENV": JSON.stringify("production"),
   },
@@ -23,7 +24,9 @@ for (const output of result.outputs) {
 
 // Copiar index.html y apuntar el script al bundle generado (SPA estática).
 const html = await readFile(path.join(process.cwd(), "src/index.html"), "utf8");
-const htmlOut = html.replace("./frontend.tsx", "./frontend.js");
+const htmlOut = html
+  .replace("./frontend.tsx", "./frontend.js")
+  .replace("</head>", '    <link rel="stylesheet" href="./frontend.css" />\n  </head>');
 await writeFile(path.join(outdir, "index.html"), htmlOut, "utf8");
 await cp(
   path.join(process.cwd(), "styles"),

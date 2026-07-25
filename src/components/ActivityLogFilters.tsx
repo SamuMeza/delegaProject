@@ -28,9 +28,9 @@ interface Props {
 
 export function ActivityLogFiltersComponent({ filters, onFilterChange, onReset }: Props) {
   return (
-    <div className="flex flex-wrap items-end gap-3 p-4 bg-muted/50 rounded-lg">
+    <div className="flex flex-wrap items-end gap-3 p-4 bg-surface-container-low rounded-lg">
       <div className="flex-1 min-w-[150px]">
-        <label className="text-xs font-medium text-muted-foreground mb-1 block">
+        <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1 block">
           Operador
         </label>
         <Input
@@ -43,7 +43,7 @@ export function ActivityLogFiltersComponent({ filters, onFilterChange, onReset }
       </div>
 
       <div className="flex-1 min-w-[150px]">
-        <label className="text-xs font-medium text-muted-foreground mb-1 block">
+        <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1 block">
           Tipo de acción
         </label>
         <Select
@@ -67,7 +67,7 @@ export function ActivityLogFiltersComponent({ filters, onFilterChange, onReset }
       </div>
 
       <div className="flex-1 min-w-[150px]">
-        <label className="text-xs font-medium text-muted-foreground mb-1 block">
+        <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1 block">
           Desde
         </label>
         <Input
@@ -80,7 +80,7 @@ export function ActivityLogFiltersComponent({ filters, onFilterChange, onReset }
       </div>
 
       <div className="flex-1 min-w-[150px]">
-        <label className="text-xs font-medium text-muted-foreground mb-1 block">
+        <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1 block">
           Hasta
         </label>
         <Input

@@ -44,9 +44,9 @@ function Timeline({ currentStatus }: { currentStatus: string }) {
             <div
               className={cn(
                 "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold",
-                done ? "bg-secondary text-white" : i === idx + 1 && !isCancelled
-                  ? "border-2 border-secondary bg-white text-secondary"
-                  : "border-2 border-border bg-white text-muted-foreground",
+                done ? "bg-secondary text-on-secondary" : i === idx + 1 && !isCancelled
+                  ? "border-2 border-secondary bg-surface-container-lowest text-secondary"
+                  : "border-2 border-border-subtle bg-surface-container-lowest text-on-surface-variant",
               )}
             >
               {done ? "✓" : i + 1}
@@ -55,8 +55,8 @@ function Timeline({ currentStatus }: { currentStatus: string }) {
               className={cn(
                 "text-sm",
                 done
-                  ? "font-medium text-foreground"
-                  : "text-muted-foreground",
+                  ? "font-medium text-on-surface"
+                  : "text-on-surface-variant",
               )}
             >
               {STATUS_LABELS[s] ?? s}
@@ -66,10 +66,10 @@ function Timeline({ currentStatus }: { currentStatus: string }) {
       })}
       {isCancelled && (
         <div className="flex items-center gap-3">
-          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-destructive text-xs font-bold text-white">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-error text-xs font-bold text-on-error">
             ✕
           </div>
-          <span className="text-sm font-medium text-destructive">
+          <span className="text-sm font-medium text-error">
             {STATUS_LABELS.cancelada} — Esta orden fue cancelada
           </span>
         </div>
@@ -101,8 +101,10 @@ export function OrderTrackingPage() {
   if (loading) {
     return (
       <LandingLayout>
-        <div className="flex items-center justify-center py-20">
-          <p className="text-muted-foreground">Verificando enlace…</p>
+        <div className="w-full max-w-[1280px] mx-auto px-4 md:px-16 py-20">
+          <div className="flex items-center justify-center">
+            <p className="text-on-surface-variant">Verificando enlace...</p>
+          </div>
         </div>
       </LandingLayout>
     );
@@ -111,14 +113,16 @@ export function OrderTrackingPage() {
   if (!valid || !payload) {
     return (
       <LandingLayout>
-        <div className="mx-auto max-w-md py-20 text-center">
-          <h1 className="mb-4 text-headline-md font-bold text-destructive">
-            Enlace no válido
-          </h1>
-          <p className="text-muted-foreground">
-            Este enlace de seguimiento no es válido o ha sido alterado. Por favor,
-            solicita un nuevo enlace al operador que te atendió.
-          </p>
+        <div className="w-full max-w-[1280px] mx-auto px-4 md:px-16 py-20">
+          <div className="mx-auto max-w-md text-center">
+            <h1 className="mb-4 font-display text-headline-md text-error">
+              Enlace no válido
+            </h1>
+            <p className="text-on-surface-variant">
+              Este enlace de seguimiento no es válido o ha sido alterado. Por favor,
+              solicita un nuevo enlace al operador que te atendió.
+            </p>
+          </div>
         </div>
       </LandingLayout>
     );
@@ -126,56 +130,58 @@ export function OrderTrackingPage() {
 
   return (
     <LandingLayout>
-      <div className="mx-auto max-w-lg">
-        <h1 className="mb-2 text-headline-md font-bold text-primary">
-          Seguimiento de orden
-        </h1>
-        <p className="mb-8 text-muted-foreground">
-          Estado actualizado de tu solicitud.
-        </p>
+      <div className="w-full max-w-[1280px] mx-auto px-4 md:px-16 py-12">
+        <div className="mx-auto max-w-lg">
+          <h1 className="mb-2 font-display text-headline-md text-primary">
+            Seguimiento de orden
+          </h1>
+          <p className="mb-8 text-on-surface-variant">
+            Estado actualizado de tu solicitud.
+          </p>
 
-        {/* Order details card */}
-        <div className="mb-8 rounded-xl border border-border bg-white p-6">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <p className="text-xs text-muted-foreground">ID de orden</p>
-              <p className="font-medium">{payload.id}</p>
+          {/* Order details card */}
+          <div className="mb-8 bg-surface-container-lowest rounded-xl shadow-ambient p-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <p className="text-xs text-on-surface-variant font-semibold uppercase tracking-wider">ID de orden</p>
+                <p className="font-medium text-on-surface">{payload.id}</p>
+              </div>
+              <div>
+                <p className="text-xs text-on-surface-variant font-semibold uppercase tracking-wider">Cliente</p>
+                <p className="font-medium text-on-surface">{payload.clientName}</p>
+              </div>
+              <div>
+                <p className="text-xs text-on-surface-variant font-semibold uppercase tracking-wider">Servicio</p>
+                <p className="font-medium capitalize text-on-surface">{payload.serviceType}</p>
+              </div>
+              <div>
+                <p className="text-xs text-on-surface-variant font-semibold uppercase tracking-wider">Precio</p>
+                <p className="font-medium text-on-surface">${payload.price}</p>
+              </div>
+              <div>
+                <p className="text-xs text-on-surface-variant font-semibold uppercase tracking-wider">Estado</p>
+                <p className="font-medium text-on-surface">
+                  {STATUS_LABELS[payload.status] ?? payload.status}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-on-surface-variant font-semibold uppercase tracking-wider">Fecha de entrega</p>
+                <p className="font-medium text-on-surface">
+                  {payload.dueDate || "Por confirmar"}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Cliente</p>
-              <p className="font-medium">{payload.clientName}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Servicio</p>
-              <p className="font-medium capitalize">{payload.serviceType}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Precio</p>
-              <p className="font-medium">${payload.price}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Estado</p>
-              <p className="font-medium">
-                {STATUS_LABELS[payload.status] ?? payload.status}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Fecha de entrega</p>
-              <p className="font-medium">
-                {payload.dueDate || "Por confirmar"}
-              </p>
+            <div className="mt-4">
+              <p className="text-xs text-on-surface-variant font-semibold uppercase tracking-wider">Descripción</p>
+              <p className="text-sm text-on-surface-variant">{payload.description}</p>
             </div>
           </div>
-          <div className="mt-4">
-            <p className="text-xs text-muted-foreground">Descripción</p>
-            <p className="text-sm text-muted-foreground">{payload.description}</p>
-          </div>
-        </div>
 
-        {/* Timeline */}
-        <div className="rounded-xl border border-border bg-white p-6">
-          <h2 className="mb-4 font-semibold">Progreso</h2>
-          <Timeline currentStatus={payload.status} />
+          {/* Timeline */}
+          <div className="bg-surface-container-lowest rounded-xl shadow-ambient p-6">
+            <h2 className="mb-4 font-semibold text-primary">Progreso</h2>
+            <Timeline currentStatus={payload.status} />
+          </div>
         </div>
       </div>
     </LandingLayout>

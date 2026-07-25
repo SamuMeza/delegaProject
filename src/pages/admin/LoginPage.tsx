@@ -42,15 +42,18 @@ export function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+    <main className="flex min-h-screen items-center justify-center bg-surface-studio p-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm space-y-4 rounded-xl border bg-card p-6 shadow-sm"
+        className="w-full max-w-md space-y-6 bg-surface-container-lowest rounded-xl shadow-ambient p-8"
       >
-        <h1 className="text-xl font-semibold">Acceso operadores</h1>
+        <div className="text-center">
+          <h1 className="font-display text-headline-md text-primary font-bold mb-2">Acceso operadores</h1>
+          <p className="text-sm text-on-surface-variant">Ingresa tus credenciales para continuar</p>
+        </div>
 
         <div className="space-y-2">
-          <Label htmlFor="username">Usuario</Label>
+          <Label htmlFor="username" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Usuario</Label>
           <Input
             id="username"
             name="username"
@@ -59,11 +62,12 @@ export function LoginPage() {
             onChange={(e) => setUsername(e.target.value)}
             required
             disabled={isBlocked}
+            placeholder="Tu usuario"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Contraseña</Label>
+          <Label htmlFor="password" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Contraseña</Label>
           <Input
             id="password"
             name="password"
@@ -73,17 +77,18 @@ export function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             disabled={isBlocked}
+            placeholder="Tu contraseña"
           />
         </div>
 
         {error && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-error bg-error-container/10 p-3 rounded-lg">
             {error}
           </p>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading || isBlocked}>
-          {loading ? "Accediendo…" : "Entrar"}
+        <Button type="submit" className="w-full h-11" disabled={loading || isBlocked}>
+          {loading ? "Accediendo..." : "Entrar"}
         </Button>
       </form>
     </main>

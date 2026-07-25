@@ -77,9 +77,12 @@ export function ClientsListPage() {
   }
 
   return (
-    <main className="p-8 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Clientes</h1>
+        <div>
+          <h2 className="font-display text-headline-md text-primary mb-2">Clientes</h2>
+          <p className="text-sm text-on-surface-variant">Gestión de clientes y contactos.</p>
+        </div>
         <Button onClick={() => setShowCreate(!showCreate)}>
           <Plus className="h-4 w-4" />
           Nuevo cliente
@@ -87,25 +90,25 @@ export function ClientsListPage() {
       </div>
 
       {showCreate && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Nuevo cliente</CardTitle>
+        <Card className="p-6">
+          <CardHeader className="px-0 pb-4">
+            <CardTitle className="text-headline-sm text-primary font-display">Nuevo cliente</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="px-0 space-y-4">
             <div className="grid gap-2">
-              <Label htmlFor="c-name">Nombre</Label>
+              <Label htmlFor="c-name" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Nombre</Label>
               <Input id="c-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre completo" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="c-phone">Teléfono</Label>
+              <Label htmlFor="c-phone" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Teléfono</Label>
               <Input id="c-phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0412-1234567" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="c-email">Email (opcional)</Label>
+              <Label htmlFor="c-email" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Email (opcional)</Label>
               <Input id="c-email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="correo@ejemplo.com" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="c-notes">Notas (opcional)</Label>
+              <Label htmlFor="c-notes" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Notas (opcional)</Label>
               <Input id="c-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Referencia..." />
             </div>
             <Button onClick={handleCreate} disabled={!name.trim() || !phone.trim()}>
@@ -115,27 +118,27 @@ export function ClientsListPage() {
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de clientes</CardTitle>
+      <Card className="p-6">
+        <CardHeader className="px-0 pb-4">
+          <CardTitle className="text-headline-sm text-primary font-display">Lista de clientes</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0">
           {!clients || clients.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No hay clientes registrados.</p>
+            <p className="text-sm text-on-surface-variant">No hay clientes registrados.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th className="pb-2 font-medium">Nombre</th>
-                    <th className="pb-2 font-medium">Teléfono</th>
-                    <th className="pb-2 font-medium">Último contacto</th>
-                    <th className="pb-2 font-medium">Suscripción activa</th>
-                    <th className="pb-2 font-medium">Órdenes del mes</th>
-                    <th className="pb-2 font-medium">Alerta</th>
+                  <tr className="bg-surface-container-low border-b border-border-subtle text-left text-on-surface-variant">
+                    <th className="py-4 px-6 font-semibold uppercase tracking-wider text-xs">Nombre</th>
+                    <th className="py-4 px-6 font-semibold uppercase tracking-wider text-xs">Teléfono</th>
+                    <th className="py-4 px-6 font-semibold uppercase tracking-wider text-xs">Último contacto</th>
+                    <th className="py-4 px-6 font-semibold uppercase tracking-wider text-xs">Suscripción</th>
+                    <th className="py-4 px-6 font-semibold uppercase tracking-wider text-xs">Órdenes mes</th>
+                    <th className="py-4 px-6 font-semibold uppercase tracking-wider text-xs">Alerta</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-border-subtle">
                   {clients
                     .filter((c) => !c.name.startsWith("[desactivado]"))
                     .map((client) => {
@@ -143,23 +146,23 @@ export function ClientsListPage() {
                       const sub = client.subscription;
                       const monthly = ordersThisMonth(client.subscription);
                       return (
-                        <tr key={client.phone} className="border-b hover:bg-muted/50">
-                          <td className="py-2">
-                            <Link to={`/admin/clientes/${client.phone}`} className="text-primary hover:underline">
+                        <tr key={client.phone} className="hover:bg-surface-container-low transition-colors">
+                          <td className="py-4 px-6">
+                            <Link to={`/admin/clientes/${client.phone}`} className="text-primary font-medium hover:underline">
                               {client.name}
                             </Link>
                           </td>
-                          <td className="py-2">{client.phone}</td>
-                          <td className="py-2">
+                          <td className="py-4 px-6 text-on-surface-variant">{client.phone}</td>
+                          <td className="py-4 px-6 text-on-surface-variant">
                             {lastContactMap.has(client.phone)
                               ? new Date(lastContactMap.get(client.phone)!).toLocaleDateString()
                               : "—"}
                           </td>
-                          <td className="py-2">{sub ? `${sub.type} (${sub.monthlyQuota}/mes)` : "—"}</td>
-                          <td className="py-2">{monthly}</td>
-                          <td className="py-2">
+                          <td className="py-4 px-6 text-on-surface-variant">{sub ? `${sub.type} (${sub.monthlyQuota}/mes)` : "—"}</td>
+                          <td className="py-4 px-6 text-on-surface-variant">{monthly}</td>
+                          <td className="py-4 px-6">
                             {alert.show && (
-                              <span className="inline-flex items-center gap-1 text-xs text-amber-600">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-urgency-alert">
                                 <AlertTriangle className="h-3 w-3" />
                                 {alert.days} día{alert.days !== 1 ? "s" : ""}
                               </span>
@@ -174,6 +177,6 @@ export function ClientsListPage() {
           )}
         </CardContent>
       </Card>
-    </main>
+    </div>
   );
 }

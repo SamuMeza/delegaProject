@@ -9,6 +9,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { seedDatabase } from "@/lib/db/seed";
+import "./index.css";
 
 const elem = document.getElementById("root")!;
 const app = (

@@ -5,13 +5,13 @@ interface StatusData {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  nueva: { label: "Nueva", color: "bg-blue-500" },
-  pendiente_pago: { label: "Pendiente pago", color: "bg-yellow-500" },
-  en_progreso: { label: "En progreso", color: "bg-purple-500" },
+  nueva: { label: "Nueva", color: "bg-brand-operator-1" },
+  pendiente_pago: { label: "Pendiente pago", color: "bg-tertiary" },
+  en_progreso: { label: "En progreso", color: "bg-secondary" },
   revision: { label: "Revisión", color: "bg-orange-500" },
   pendiente_final: { label: "Pendiente final", color: "bg-cyan-500" },
-  completada: { label: "Completada", color: "bg-green-500" },
-  cancelada: { label: "Cancelada", color: "bg-red-500" },
+  completada: { label: "Completada", color: "bg-brand-operator-2" },
+  cancelada: { label: "Cancelada", color: "bg-error" },
 };
 
 interface Props {
@@ -23,7 +23,7 @@ export function OrderStatusChart({ data }: Props) {
 
   if (total === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
+      <div className="text-center py-8 text-on-surface-variant">
         Sin datos de órdenes
       </div>
     );
@@ -49,11 +49,11 @@ export function OrderStatusChart({ data }: Props) {
                 <span className={`w-3 h-3 rounded-full ${color}`} />
                 {STATUS_CONFIG[status]?.label || status}
               </span>
-              <span className="text-muted-foreground">
+              <span className="text-on-surface-variant">
                 {count} ({percentage}%)
               </span>
             </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <div className="h-2 bg-surface-container-high rounded-full overflow-hidden">
               <div
                 className={`h-full ${color} transition-all duration-500`}
                 style={{ width: `${percentage}%` }}

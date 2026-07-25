@@ -9,6 +9,31 @@ import { join } from "node:path";
 const ROOT = process.cwd();
 const SRC = join(ROOT, "src");
 
+const CSS_CACHE: Record<string, string> = {};
+
+async function buildAndGetCSS(filePath: string): Promise<string | null> {
+  if (CSS_CACHE[filePath]) return CSS_CACHE[filePath];
+  try {
+    const result = await Bun.build({
+      entrypoints: [filePath],
+      plugins: [tailwind],
+      target: "browser",
+      sourcemap: "linked",
+    });
+    for (const output of result.outputs) {
+      const isCSS = output.type === "text/css" || output.path.endsWith(".css");
+      if (isCSS) {
+        const text = await output.text();
+        CSS_CACHE[filePath] = text;
+        return text;
+      }
+    }
+  } catch (e) {
+    console.error("buildAndGetCSS error:", e);
+  }
+  return null;
+}
+
 const server = Bun.serve({
   port: 3000,
   async fetch(req) {
@@ -25,7 +50,13 @@ const server = Bun.serve({
           '<script type="module" src="/frontend.tsx" async>',
           '<script type="module" src="/frontend.tsx">',
         );
-      return new Response(out, {
+
+      const css = await buildAndGetCSS(join(SRC, "frontend.tsx"));
+      const finalHtml = css
+        ? out.replace("</head>", `<style>${css}</style>\n  </head>`)
+        : out;
+
+      return new Response(finalHtml, {
         headers: {
           "content-type": "text/html",
           "cache-control": "no-store",
@@ -56,16 +87,16 @@ const server = Bun.serve({
           headers: { "content-type": "text/plain", "cache-control": "no-store" },
         });
       }
-      const out = result.outputs[0];
-      if (!out) {
+      const jsOutput = result.outputs.find((o) => o.type === "application/javascript" || o.type === "text/javascript" || o.path.endsWith(".js"));
+      if (!jsOutput) {
         return new Response("Build produced no output", {
           status: 500,
           headers: { "cache-control": "no-store" },
         });
       }
-      return new Response(out.stream(), {
+      return new Response(jsOutput.stream(), {
         headers: {
-          "content-type": out.type ?? "application/javascript",
+          "content-type": "application/javascript",
           "cache-control": "no-store",
         },
       });

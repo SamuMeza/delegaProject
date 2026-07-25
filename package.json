@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "latest",
+    "@playwright/test": "^1.62.0",
     "@testing-library/dom": "latest",
     "@testing-library/jest-dom": "latest",
     "@testing-library/react": "latest",

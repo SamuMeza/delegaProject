@@ -16,14 +16,14 @@ export function ServiceSelector({
           type="button"
           onClick={() => onSelect(s)}
           className={cn(
-            "flex flex-col items-center justify-center gap-1 rounded-xl border-2 px-4 py-4 text-center transition-all hover:border-primary/40 hover:shadow-sm min-h-[100px]",
+            "flex flex-col items-center justify-center gap-1 rounded-xl border-2 px-4 py-4 text-center transition-all min-h-[100px]",
             selected === s.id
-              ? "border-primary bg-primary/5 shadow-sm"
-              : "border-border bg-white",
+              ? "border-primary bg-primary/5 shadow-ambient"
+              : "border-border-subtle bg-surface-container-lowest shadow-ambient hover:shadow-ambient-hover hover:border-primary/40",
           )}
         >
-          <span className="text-lg font-semibold capitalize">{s.label}</span>
-          <span className="text-xs text-muted-foreground">{s.description}</span>
+          <span className="text-lg font-semibold capitalize text-primary">{s.label}</span>
+          <span className="text-xs text-on-surface-variant">{s.description}</span>
           <span className="mt-1 text-sm font-bold text-secondary">Desde ${s.basePrice}</span>
         </button>
       ))}

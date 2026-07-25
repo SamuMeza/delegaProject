@@ -12,7 +12,7 @@ export function ActivityLogPagination({ page, totalPages, total, onPageChange }:
 
   return (
     <div className="flex items-center justify-between py-4">
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-on-surface-variant">
         {total} resultado{total !== 1 ? "s" : ""}
       </p>
       <div className="flex items-center gap-2">
@@ -24,7 +24,7 @@ export function ActivityLogPagination({ page, totalPages, total, onPageChange }:
         >
           Anterior
         </Button>
-        <span className="text-sm text-muted-foreground">
+        <span className="text-sm text-on-surface-variant">
           Página {page} de {totalPages}
         </span>
         <Button

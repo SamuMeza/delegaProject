@@ -29,7 +29,7 @@ export function ClientDetailPage() {
   if (!client) {
     return (
       <main className="p-8">
-        <p className="text-sm text-muted-foreground">Cargando cliente…</p>
+        <p className="text-sm text-on-surface-variant">Cargando cliente…</p>
       </main>
     );
   }
@@ -193,18 +193,18 @@ export function ClientDetailPage() {
   }
 
   return (
-    <main className="p-8 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate("/admin/clientes")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-2xl font-semibold">{client.name}</h1>
+        <h2 className="font-display text-headline-md text-primary">{client.name}</h2>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="p-6">
+        <CardHeader className="px-0 pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle>Datos del cliente</CardTitle>
+            <CardTitle className="text-headline-sm text-primary font-display">Datos del cliente</CardTitle>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => setEditing(!editing)}>
                 <Pencil className="h-4 w-4" />
@@ -217,10 +217,10 @@ export function ClientDetailPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="px-0 space-y-4">
           <div className="grid gap-1">
-            <span className="text-xs text-muted-foreground">Teléfono</span>
-            <span className="text-sm">{client.phone}</span>
+            <span className="text-xs text-on-surface-variant font-semibold uppercase tracking-wider">Teléfono</span>
+            <span className="text-sm text-on-surface">{client.phone}</span>
           </div>
           {editing ? (
             <>
@@ -241,27 +241,27 @@ export function ClientDetailPage() {
           ) : (
             <>
               <div className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Nombre</span>
+                <span className="text-xs text-on-surface-variant">Nombre</span>
                 <span className="text-sm">{client.name}</span>
               </div>
               {client.email && (
                 <div className="grid gap-1">
-                  <span className="text-xs text-muted-foreground">Email</span>
+                  <span className="text-xs text-on-surface-variant">Email</span>
                   <span className="text-sm">{client.email}</span>
                 </div>
               )}
               {client.notes && (
                 <div className="grid gap-1">
-                  <span className="text-xs text-muted-foreground">Notas</span>
+                  <span className="text-xs text-on-surface-variant">Notas</span>
                   <span className="text-sm">{client.notes}</span>
                 </div>
               )}
               <div className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Total órdenes</span>
+                <span className="text-xs text-on-surface-variant">Total órdenes</span>
                 <span className="text-sm">{client.totalOrders}</span>
               </div>
               <div className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Total gastado</span>
+                <span className="text-xs text-on-surface-variant">Total gastado</span>
                 <span className="text-sm">${client.totalSpent.toFixed(2)}</span>
               </div>
             </>
@@ -329,7 +329,7 @@ export function ClientDetailPage() {
             </Card>
           )}
           {sortedSubs.length === 0 && !showCreateSub ? (
-            <p className="text-sm text-muted-foreground">Sin suscripciones registradas.</p>
+            <p className="text-sm text-on-surface-variant">Sin suscripciones registradas.</p>
           ) : (
             <div className="space-y-3">
               {sortedSubs.map((sub) => {
@@ -340,7 +340,7 @@ export function ClientDetailPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <span className="font-medium">{sub.id}</span>
-                        <span className={`ml-2 text-xs font-medium ${sub.status === "activa" ? "text-green-600" : sub.status === "vencida" ? "text-red-600" : "text-muted-foreground"}`}>
+                        <span className={`ml-2 text-xs font-medium ${sub.status === "activa" ? "text-brand-operator-2" : sub.status === "vencida" ? "text-error" : "text-on-surface-variant"}`}>
                           {sub.status === "activa" ? "Activa" : sub.status === "vencida" ? "Vencida" : sub.status === "cancelada" ? "Cancelada" : "Reemplazada"}
                         </span>
                       </div>
@@ -360,7 +360,7 @@ export function ClientDetailPage() {
                         )}
                       </div>
                     </div>
-                    <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                    <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-on-surface-variant">
                       <span>Tipo: {sub.type}</span>
                       <span>Cupo: {used}/{sub.monthlyQuota} usados este mes</span>
                       <span>Inicio: {new Date(sub.startDate).toLocaleDateString()}</span>
@@ -384,7 +384,7 @@ export function ClientDetailPage() {
           <OrderHistory clientPhone={client.phone} />
         </CardContent>
       </Card>
-    </main>
+    </div>
   );
 }
 
@@ -407,17 +407,17 @@ function OrderHistory({ clientPhone }: { clientPhone: string }) {
       });
   });
 
-  if (!loaded) return <p className="text-sm text-muted-foreground">Cargando…</p>;
+  if (!loaded) return <p className="text-sm text-on-surface-variant">Cargando…</p>;
 
   if (orders.length === 0) {
-    return <p className="text-sm text-muted-foreground">Sin órdenes registradas.</p>;
+    return <p className="text-sm text-on-surface-variant">Sin órdenes registradas.</p>;
   }
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b text-left text-muted-foreground">
+          <tr className="border-b text-left text-on-surface-variant">
             <th className="pb-2 font-medium">ID</th>
             <th className="pb-2 font-medium">Servicio</th>
             <th className="pb-2 font-medium">Estado</th>

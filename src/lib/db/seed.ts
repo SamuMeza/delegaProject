@@ -3,7 +3,7 @@ import { env } from "@/lib/config/env";
 import type { Client, Config, Operator, ServiceType } from "@/lib/types";
 
 const CONFIG_ID = "app";
-const SEED_PASSWORD = "cambia_este_hash";
+const SEED_PASSWORD = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8";
 const DEFAULT_TIMEOUT_HOURS = 4;
 
 function defaultConfig(): Config {

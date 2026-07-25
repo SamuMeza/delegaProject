@@ -104,15 +104,17 @@ export function DelegatePage() {
 
     return (
       <LandingLayout>
-        <div className="mx-auto max-w-lg text-center">
-          <h1 className="mb-4 text-headline-md font-bold text-primary">
-            Solicitud lista
-          </h1>
-          <p className="mb-8 text-muted-foreground">
-            Tu solicitud está preparada. Envíala por WhatsApp para que nuestros
-            operadores la reciban.
-          </p>
-          <WhatsAppGenerator data={waData} onCopy={() => {}} />
+        <div className="w-full max-w-[1280px] mx-auto px-4 md:px-16 py-12">
+          <div className="mx-auto max-w-lg text-center">
+            <h1 className="mb-4 font-display text-headline-md text-primary">
+              Solicitud lista
+            </h1>
+            <p className="mb-8 text-on-surface-variant">
+              Tu solicitud está preparada. Envíala por WhatsApp para que nuestros
+              operadores la reciban.
+            </p>
+            <WhatsAppGenerator data={waData} onCopy={() => {}} />
+          </div>
         </div>
       </LandingLayout>
     );
@@ -120,99 +122,101 @@ export function DelegatePage() {
 
   return (
     <LandingLayout>
-      <h1 className="mb-2 text-headline-md font-bold text-primary">
-        Delegar tarea
-      </h1>
-      <p className="mb-8 text-muted-foreground">
-        Selecciona el tipo de servicio, completa los detalles y envía tu solicitud.
-      </p>
+      <div className="w-full max-w-[1280px] mx-auto px-4 md:px-16 py-12">
+        <h1 className="mb-2 font-display text-headline-md text-primary">
+          Delegar tarea
+        </h1>
+        <p className="mb-8 text-on-surface-variant">
+          Selecciona el tipo de servicio, completa los detalles y envía tu solicitud.
+        </p>
 
-      <form onSubmit={handleSubmit} className="mx-auto max-w-lg space-y-6">
-        {/* Service selector */}
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Tipo de servicio <span className="text-destructive">*</span>
-          </label>
-          <ServiceSelector selected={selectedService} onSelect={handleSelect} />
-        </div>
+        <form onSubmit={handleSubmit} className="mx-auto max-w-lg space-y-6">
+          {/* Service selector */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-on-surface uppercase tracking-wider">
+              Tipo de servicio <span className="text-error">*</span>
+            </label>
+            <ServiceSelector selected={selectedService} onSelect={handleSelect} />
+          </div>
 
-        {selectedService && (
-          <>
-            {/* Client info */}
-            <div>
-              <label htmlFor="clientName" className="mb-1 block text-sm font-medium">
-                Tu nombre <span className="text-destructive">*</span>
-              </label>
-              <input
-                id="clientName"
-                value={form.clientName}
-                onChange={(e) => {
-                  setForm((p) => ({ ...p, clientName: e.target.value }));
-                  setErrors((p) => ({ ...p, clientName: "" }));
-                }}
-                className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"
-                placeholder="Ej: María Pérez"
+          {selectedService && (
+            <>
+              {/* Client info */}
+              <div>
+                <label htmlFor="clientName" className="mb-1 block text-sm font-semibold text-on-surface uppercase tracking-wider">
+                  Tu nombre <span className="text-error">*</span>
+                </label>
+                <input
+                  id="clientName"
+                  value={form.clientName}
+                  onChange={(e) => {
+                    setForm((p) => ({ ...p, clientName: e.target.value }));
+                    setErrors((p) => ({ ...p, clientName: "" }));
+                  }}
+                  className="h-10 w-full rounded-lg border border-border-subtle bg-surface-studio px-3 py-1 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-secondary focus-visible:outline-offset-2"
+                  placeholder="Ej: María Pérez"
+                />
+                {errors.clientName && <p className="mt-1 text-xs text-error">{errors.clientName}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="clientContact" className="mb-1 block text-sm font-semibold text-on-surface uppercase tracking-wider">
+                  Contacto (WhatsApp) <span className="text-error">*</span>
+                </label>
+                <input
+                  id="clientContact"
+                  value={form.clientContact}
+                  onChange={(e) => {
+                    setForm((p) => ({ ...p, clientContact: e.target.value }));
+                    setErrors((p) => ({ ...p, clientContact: "" }));
+                  }}
+                  className="h-10 w-full rounded-lg border border-border-subtle bg-surface-studio px-3 py-1 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-secondary focus-visible:outline-offset-2"
+                  placeholder="Ej: 584121234567"
+                />
+                {errors.clientContact && <p className="mt-1 text-xs text-error">{errors.clientContact}</p>}
+              </div>
+
+              {/* Dynamic fields */}
+              <DynamicFields
+                serviceType={selectedService}
+                values={form.fieldValues}
+                errors={errors}
+                onChange={handleFieldChange}
               />
-              {errors.clientName && <p className="mt-1 text-xs text-destructive">{errors.clientName}</p>}
-            </div>
 
-            <div>
-              <label htmlFor="clientContact" className="mb-1 block text-sm font-medium">
-                Contacto (WhatsApp) <span className="text-destructive">*</span>
-              </label>
-              <input
-                id="clientContact"
-                value={form.clientContact}
-                onChange={(e) => {
-                  setForm((p) => ({ ...p, clientContact: e.target.value }));
-                  setErrors((p) => ({ ...p, clientContact: "" }));
-                }}
-                className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"
-                placeholder="Ej: 584121234567"
-              />
-              {errors.clientContact && <p className="mt-1 text-xs text-destructive">{errors.clientContact}</p>}
-            </div>
+              {/* Description */}
+              <div>
+                <label htmlFor="description" className="mb-1 block text-sm font-semibold text-on-surface uppercase tracking-wider">
+                  Descripción del trabajo <span className="text-error">*</span>
+                </label>
+                <textarea
+                  id="description"
+                  value={form.description}
+                  onChange={(e) => {
+                    setForm((p) => ({ ...p, description: e.target.value }));
+                    setErrors((p) => ({ ...p, description: "" }));
+                  }}
+                  className="w-full rounded-lg border border-border-subtle bg-surface-studio px-3 py-2 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-secondary focus-visible:outline-offset-2"
+                  rows={3}
+                  placeholder="Describe lo que necesitas..."
+                />
+                {errors.description && <p className="mt-1 text-xs text-error">{errors.description}</p>}
+              </div>
 
-            {/* Dynamic fields */}
-            <DynamicFields
-              serviceType={selectedService}
-              values={form.fieldValues}
-              errors={errors}
-              onChange={handleFieldChange}
-            />
+              {/* Price estimator */}
+              <PriceEstimator serviceType={selectedService} params={form.fieldValues} />
 
-            {/* Description */}
-            <div>
-              <label htmlFor="description" className="mb-1 block text-sm font-medium">
-                Descripción del trabajo <span className="text-destructive">*</span>
-              </label>
-              <textarea
-                id="description"
-                value={form.description}
-                onChange={(e) => {
-                  setForm((p) => ({ ...p, description: e.target.value }));
-                  setErrors((p) => ({ ...p, description: "" }));
-                }}
-                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs"
-                rows={3}
-                placeholder="Describe lo que necesitas..."
-              />
-              {errors.description && <p className="mt-1 text-xs text-destructive">{errors.description}</p>}
-            </div>
-
-            {/* Price estimator */}
-            <PriceEstimator serviceType={selectedService} params={form.fieldValues} />
-
-            {/* Submit */}
-            <button
-              type="submit"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-secondary px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-secondary/90"
-            >
-              Delegar por WhatsApp
-            </button>
-          </>
-        )}
-      </form>
+              {/* Submit */}
+              <button
+                type="submit"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-secondary px-6 py-3 text-sm font-semibold text-on-secondary transition-all hover:bg-secondary/90 shadow-ambient hover:shadow-ambient-hover"
+              >
+                Delegar por WhatsApp
+              </button>
+            </>
+          )}
+        </form>
+      </div>
     </LandingLayout>
   );
 }

@@ -72,39 +72,41 @@ export function OrderCreatePage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl p-4 sm:p-8">
+    <div className="mx-auto max-w-2xl space-y-6">
       <button
         type="button"
         onClick={() => navigate("/admin/ordenes")}
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        className="inline-flex items-center gap-1 text-sm text-on-surface-variant hover:text-primary transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Volver a órdenes
       </button>
 
-      <h1 className="text-2xl font-semibold">Nueva orden</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Asignación automática por tipo de servicio
-        {config?.serviceOperatorMap
-          ? ` (${SERVICE_TYPE_LABELS[serviceType]} → ${config.serviceOperatorMap[serviceType]})`
-          : ""}
-        .
-      </p>
+      <div>
+        <h2 className="font-display text-headline-md text-primary mb-2">Nueva orden</h2>
+        <p className="text-sm text-on-surface-variant">
+          Asignación automática por tipo de servicio
+          {config?.serviceOperatorMap
+            ? ` (${SERVICE_TYPE_LABELS[serviceType]} → ${config.serviceOperatorMap[serviceType]})`
+            : ""}
+          .
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5 bg-surface-container-lowest rounded-xl shadow-ambient p-6">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <Label htmlFor="clientName">Nombre del cliente *</Label>
+            <Label htmlFor="clientName" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Nombre del cliente *</Label>
             <Input id="clientName" value={clientName} onChange={(e) => setClientName(e.target.value)} required />
           </div>
           <div>
-            <Label htmlFor="clientPhone">Teléfono *</Label>
+            <Label htmlFor="clientPhone" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Teléfono *</Label>
             <Input id="clientPhone" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} required />
           </div>
         </div>
 
         <div>
-          <Label htmlFor="serviceType">Tipo de servicio *</Label>
+          <Label htmlFor="serviceType" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Tipo de servicio *</Label>
           <Select id="serviceType" value={serviceType} onValueChange={(v) => handleServiceChange(v as ServiceType)}>
             {SERVICE_TYPES.map((s) => (
               <option key={s} value={s}>
@@ -114,53 +116,53 @@ export function OrderCreatePage() {
           </Select>
         </div>
 
-        <fieldset className="rounded-lg border p-4">
-          <legend className="px-2 text-sm font-medium">Detalles del servicio</legend>
+        <fieldset className="rounded-lg border border-border-subtle p-4">
+          <legend className="px-2 text-sm font-semibold text-on-surface">Detalles del servicio</legend>
           <OrderDetailsFields serviceType={serviceType} value={details} onChange={setDetails} />
         </fieldset>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <Label htmlFor="dueDate">Fecha límite</Label>
+            <Label htmlFor="dueDate" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Fecha límite</Label>
             <Input id="dueDate" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
           </div>
           <div>
-            <Label htmlFor="price">Precio (USD) *</Label>
+            <Label htmlFor="price" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Precio (USD) *</Label>
             <Input id="price" type="number" min="0" step="0.5" value={price} onChange={(e) => setPrice(e.target.value)} required />
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <Label htmlFor="paidAmount">Monto pagado (Pago Móvil)</Label>
+            <Label htmlFor="paidAmount" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Monto pagado (Pago Móvil)</Label>
             <Input id="paidAmount" type="number" min="0" step="0.5" value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)} />
           </div>
           <div>
-            <Label htmlFor="paymentRef">Referencia de pago</Label>
+            <Label htmlFor="paymentRef" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Referencia de pago</Label>
             <Input id="paymentRef" value={paymentRef} onChange={(e) => setPaymentRef(e.target.value)} />
           </div>
         </div>
 
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={urgent} onChange={(e) => setUrgent(e.target.checked)} />
+        <label className="flex items-center gap-2 text-sm text-on-surface">
+          <input type="checkbox" checked={urgent} onChange={(e) => setUrgent(e.target.checked)} className="rounded" />
           Marcar como urgente
         </label>
 
         {error && (
-          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+          <p className="rounded-lg bg-error-container/10 px-3 py-2 text-sm text-error" role="alert">
             {error}
           </p>
         )}
 
         <div className="flex gap-2">
           <Button type="submit" disabled={submitting}>
-            {submitting ? "Guardando…" : "Crear orden"}
+            {submitting ? "Guardando..." : "Crear orden"}
           </Button>
           <Button type="button" variant="outline" onClick={() => navigate("/admin/ordenes")}>
             Cancelar
           </Button>
         </div>
       </form>
-    </main>
+    </div>
   );
 }

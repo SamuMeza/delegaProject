@@ -18,10 +18,10 @@ export function ActivityLogPage() {
   } = useActivityLog();
 
   return (
-    <main className="p-4 md:p-8 space-y-6">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Log de actividad</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h2 className="font-display text-headline-md text-primary mb-2">Log de actividad</h2>
+        <p className="text-sm text-on-surface-variant">
           Registro cronológico de acciones realizadas en el panel.
         </p>
       </div>
@@ -35,7 +35,7 @@ export function ActivityLogPage() {
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="p-4 border rounded-lg space-y-2">
+            <div key={i} className="p-4 bg-surface-container-lowest rounded-xl shadow-ambient space-y-2">
               <Skeleton className="h-4 w-32" />
               <Skeleton className="h-3 w-full" />
               <Skeleton className="h-3 w-48" />
@@ -43,15 +43,15 @@ export function ActivityLogPage() {
           ))}
         </div>
       ) : entries.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <p className="text-lg">No hay actividad registrada</p>
+        <div className="text-center py-12 text-on-surface-variant bg-surface-container-lowest rounded-xl shadow-ambient">
+          <p className="text-lg font-display">No hay actividad registrada</p>
           <p className="text-sm mt-1">
             Las acciones realizadas en el panel aparecerán aquí.
           </p>
         </div>
       ) : (
         <>
-          <div className="border rounded-lg divide-y">
+          <div className="bg-surface-container-lowest rounded-xl shadow-ambient overflow-hidden divide-y divide-border-subtle">
             {entries.map((entry) => (
               <ActivityLogEntry key={entry.id} entry={entry} />
             ))}
@@ -64,6 +64,6 @@ export function ActivityLogPage() {
           />
         </>
       )}
-    </main>
+    </div>
   );
 }

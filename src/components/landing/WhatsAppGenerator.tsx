@@ -42,7 +42,7 @@ export function WhatsAppGenerator({
         href={waUrl}
         target="_blank"
         rel="noreferrer"
-        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-secondary px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-secondary/90"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#25D366] px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-[#20bd5a] shadow-ambient hover:shadow-ambient-hover"
       >
         Enviar por WhatsApp
       </a>
@@ -52,7 +52,7 @@ export function WhatsAppGenerator({
           navigator.clipboard.writeText(message);
           onCopy?.();
         }}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-white px-6 py-3 text-sm font-medium transition-all hover:bg-surface"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-border-subtle bg-surface-container-lowest px-6 py-3 text-sm font-medium transition-all hover:bg-surface-container text-on-surface"
       >
         Copiar mensaje al portapapeles
       </button>

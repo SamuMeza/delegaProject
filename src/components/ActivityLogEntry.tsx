@@ -50,20 +50,20 @@ export function ActivityLogEntry({ entry }: Props) {
   });
 
   return (
-    <div className="flex items-start gap-3 py-3 border-b last:border-0">
+    <div className="flex items-start gap-3 py-3 border-b border-border-subtle last:border-0 px-4">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <Badge variant={ACTION_COLORS[entry.action] || "default"}>
             {ACTION_LABELS[entry.action] || entry.action}
           </Badge>
           {entry.targetId && (
-            <span className="text-xs text-muted-foreground font-mono">
+            <span className="text-xs text-on-surface-variant font-mono">
               {entry.targetId}
             </span>
           )}
         </div>
-        <p className="mt-1 text-sm text-foreground line-clamp-2">{entry.details}</p>
-        <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+        <p className="mt-1 text-sm text-on-surface line-clamp-2">{entry.details}</p>
+        <div className="mt-1 flex items-center gap-3 text-xs text-on-surface-variant">
           <span>{entry.operatorId}</span>
           <span>·</span>
           <span>{formattedDate} {formattedTime}</span>
