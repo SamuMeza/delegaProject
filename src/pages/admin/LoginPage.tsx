@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function LoginPage() {
-  const { login } = useAuth();
+  const { login, remainingAttempts } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const isBlocked = remainingAttempts === 0;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -22,7 +24,19 @@ export function LoginPage() {
     if (ok) {
       navigate("/admin", { replace: true });
     } else {
-      setError("Credenciales incorrectas");
+      if (remainingAttempts === 0) {
+        const blocked = (() => {
+          try {
+            return Number(sessionStorage.getItem("delega_login_blocked_until")) || 0;
+          } catch {
+            return 0;
+          }
+        })();
+        const remainingMin = blocked > 0 ? Math.ceil((blocked - Date.now()) / 60000) : 15;
+        setError(`Demasiados intentos. Intenta de nuevo en ${remainingMin} minuto(s).`);
+      } else {
+        setError(`Credenciales incorrectas. Quedan ${remainingAttempts} intento(s).`);
+      }
       setPassword("");
     }
   }
@@ -44,6 +58,7 @@ export function LoginPage() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
+            disabled={isBlocked}
           />
         </div>
 
@@ -57,6 +72,7 @@ export function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={isBlocked}
           />
         </div>
 
@@ -66,7 +82,7 @@ export function LoginPage() {
           </p>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" className="w-full" disabled={loading || isBlocked}>
           {loading ? "Accediendo…" : "Entrar"}
         </Button>
       </form>

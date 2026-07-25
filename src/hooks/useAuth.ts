@@ -8,27 +8,103 @@ import {
 } from "@/lib/auth/session";
 import type { Session } from "@/lib/types";
 
-// Autenticación de operadores (spec §FR-4, contracts §C1, research.md §R2).
-// Login compara SHA-256(password) contra operator.passwordHash en Dexie.
-// La sesión vive en localStorage con expiresAt derivado de config.
-
 const DEFAULT_TIMEOUT_HOURS = 4;
+const MAX_LOGIN_ATTEMPTS = 5;
+const BLOCK_DURATION_MS = 15 * 60 * 1000;
+
+const ATTEMPT_KEY = "delega_login_attempts";
+const BLOCK_KEY = "delega_login_blocked_until";
+
+function getAttempts(): number {
+  try {
+    return Number(sessionStorage.getItem(ATTEMPT_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function setAttempts(n: number) {
+  try {
+    sessionStorage.setItem(ATTEMPT_KEY, String(n));
+  } catch {
+    /* sessionStorage no disponible */
+  }
+}
+
+function getBlockedUntil(): number {
+  try {
+    return Number(sessionStorage.getItem(BLOCK_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function setBlockedUntil(ts: number) {
+  try {
+    sessionStorage.setItem(BLOCK_KEY, String(ts));
+  } catch {
+    /* sessionStorage no disponible */
+  }
+}
+
+function clearBlock() {
+  try {
+    sessionStorage.removeItem(ATTEMPT_KEY);
+    sessionStorage.removeItem(BLOCK_KEY);
+  } catch {
+    /* sessionStorage no disponible */
+  }
+}
 
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(() => loadSession());
+  const [remainingAttempts, setRemainingAttempts] = useState(() => {
+    const blocked = getBlockedUntil();
+    if (blocked > Date.now()) return 0;
+    return Math.max(0, MAX_LOGIN_ATTEMPTS - getAttempts());
+  });
 
   const login = useCallback(
     async (username: string, password: string): Promise<boolean> => {
       if (!username || !password) return false;
 
+      const blocked = getBlockedUntil();
+      if (blocked > Date.now()) {
+        setRemainingAttempts(0);
+        return false;
+      }
+
       const operator = await db.operators
         .where("username")
         .equals(username)
         .first();
-      if (!operator) return false;
+      if (!operator) {
+        const attempts = getAttempts() + 1;
+        setAttempts(attempts);
+        const left = Math.max(0, MAX_LOGIN_ATTEMPTS - attempts);
+        setRemainingAttempts(left);
+        if (attempts >= MAX_LOGIN_ATTEMPTS) {
+          setBlockedUntil(Date.now() + BLOCK_DURATION_MS);
+          setRemainingAttempts(0);
+        }
+        return false;
+      }
 
       const hash = await sha256(password);
-      if (hash !== operator.passwordHash) return false;
+      if (hash !== operator.passwordHash) {
+        const attempts = getAttempts() + 1;
+        setAttempts(attempts);
+        const left = Math.max(0, MAX_LOGIN_ATTEMPTS - attempts);
+        setRemainingAttempts(left);
+        if (attempts >= MAX_LOGIN_ATTEMPTS) {
+          setBlockedUntil(Date.now() + BLOCK_DURATION_MS);
+          setRemainingAttempts(0);
+        }
+        return false;
+      }
+
+      clearBlock();
+      setRemainingAttempts(MAX_LOGIN_ATTEMPTS);
 
       const config = await db.config.get("app");
       const timeoutHours = config?.sessionTimeoutHours ?? DEFAULT_TIMEOUT_HOURS;
@@ -63,6 +139,7 @@ export function useAuth() {
     session,
     isAuthenticated: session !== null && !isExpired(),
     isExpired,
+    remainingAttempts,
     login,
     logout,
   };

@@ -1,6 +1,6 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { Link } from "react-router-dom";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, AlertTriangle as AlertIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useConfig } from "@/hooks/useDelegaDB";
 import { useOrders } from "@/hooks/useDelegaDB";
@@ -11,6 +11,8 @@ import {
   PAYMENT_STATUS_LABELS,
   PAYMENT_STATUS_CLASSES,
   isOverdue,
+  isDueToday,
+  isDueTomorrow,
   formatDueDate,
 } from "@/lib/orders/ui";
 import { db } from "@/lib/db/delegaDb";
@@ -82,37 +84,108 @@ export function DashboardPage() {
     <main className="p-8 space-y-6">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
 
-      {renewals.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-amber-600">
-              <AlertTriangle className="h-5 w-5" />
-              Suscripciones próximas a vencer
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {renewals.map((sub) => {
-                const d = daysUntil(sub.endDate);
-                return (
-                  <li key={sub.id} className="flex items-center justify-between text-sm">
-                    <Link to={`/admin/clientes/${sub.clientPhone}`} className="text-primary hover:underline">
-                      {sub.clientName}
-                    </Link>
-                    <span className="text-muted-foreground">
-                      Vence en {d} día{d !== 1 ? "s" : ""} ({sub.endDate})
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+{renewals.length > 0 && (
+         <Card>
+           <CardHeader>
+             <CardTitle className="flex items-center gap-2 text-amber-600">
+               <AlertTriangle className="h-5 w-5" />
+               Suscripciones próximas a vencer
+             </CardTitle>
+           </CardHeader>
+           <CardContent>
+             <ul className="space-y-2">
+               {renewals.map((sub) => {
+                 const d = daysUntil(sub.endDate);
+                 return (
+                   <li key={sub.id} className="flex items-center justify-between text-sm">
+                     <Link to={`/admin/clientes/${sub.clientPhone}`} className="text-primary hover:underline">
+                       {sub.clientName}
+                     </Link>
+                     <span className="text-muted-foreground">
+                       Vence en {d} día{d !== 1 ? "s" : ""} ({sub.endDate})
+                     </span>
+                   </li>
+                 );
+               })}
+             </ul>
+           </CardContent>
+         </Card>
+       )}
 
-      <p className="text-sm text-muted-foreground">
-        Sesión expira tras {config?.sessionTimeoutHours ?? "—"} hora(s) de inactividad.
-      </p>
+       {/* Alertas de urgencia */}
+       {orders && (
+         <>
+           {(() => {
+             const todayOrders = orders.filter(isDueToday);
+             const tomorrowOrders = orders.filter(isDueTomorrow);
+             if (todayOrders.length === 0 && tomorrowOrders.length === 0) return null;
+             
+             return (
+               <Card>
+                 <CardHeader>
+                   <CardTitle className="flex items-center gap-2 text-orange-600">
+                     <AlertTriangle className="h-5 w-5" />
+                     Órdenes próximas a vencer
+                   </CardTitle>
+                 </CardHeader>
+                 <CardContent>
+                   {todayOrders.length > 0 && (
+                     <div className="mb-4 p-3 bg-orange-50 rounded">
+                       <div className="font-medium text-orange-800 flex items-center gap-2">
+                         <AlertTriangle className="h-4 w-4" />
+                         Vencen hoy ({todayOrders.length})
+                       </div>
+                       <ul className="mt-2 text-sm space-y-1">
+                         {todayOrders.slice(0, 5).map((order) => (
+                           <li key={order.id} className="flex justify-between">
+                             <Link to={`/admin/ordenes/${order.id}`} className="hover:underline">
+                               #{order.id} - {order.clientName}
+                             </Link>
+                             <span className="text-orange-600">{formatDueDate(order.dueDate)}</span>
+                           </li>
+                         ))}
+                         {todayOrders.length > 5 && (
+                           <li className="text-center text-xs text-muted-foreground">
+                             y {todayOrders.length - 5} más...
+                           </li>
+                         )}
+                       </ul>
+                     </div>
+                   )}
+                   
+                   {tomorrowOrders.length > 0 && (
+                     <div className="p-3 bg-yellow-50 rounded">
+                       <div className="font-medium text-yellow-800 flex items-center gap-2">
+                         <AlertTriangle className="h-4 w-4" />
+                         Vencen mañana ({tomorrowOrders.length})
+                       </div>
+                       <ul className="mt-2 text-sm space-y-1">
+                         {tomorrowOrders.slice(0, 5).map((order) => (
+                           <li key={order.id} className="flex justify-between">
+                             <Link to={`/admin/ordenes/${order.id}`} className="hover:underline">
+                               #{order.id} - {order.clientName}
+                             </Link>
+                             <span className="text-yellow-600">{formatDueDate(order.dueDate)}</span>
+                           </li>
+                         ))}
+                         {tomorrowOrders.length > 5 && (
+                           <li className="text-center text-xs text-muted-foreground">
+                             y {tomorrowOrders.length - 5} más...
+                           </li>
+                         )}
+                       </ul>
+                     </div>
+                   )}
+                 </CardContent>
+               </Card>
+             );
+           })()}
+         </>
+       )}
+
+       <p className="text-sm text-muted-foreground">
+         Sesión expira tras {config?.sessionTimeoutHours ?? "—"} hora(s) de inactividad.
+       </p>
 
       <section className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-lg border p-4">

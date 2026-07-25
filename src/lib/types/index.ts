@@ -60,6 +60,9 @@ export interface Operator {
   displayName: string;
   passwordHash: string;
   role: OperatorRole;
+  services: ServiceType[];
+  color: string;
+  active: boolean;
   createdAt: number;
 }
 
@@ -229,6 +232,7 @@ export interface Config {
   sessionTimeoutHours: number;
   orderCounter: number;
   subscriptionCounter: number;
+  notificationEnabled: boolean;
   priceRanges: PriceRanges;
   faqs: FaqItem[];
   pagoMovil: PagoMovilInfo;

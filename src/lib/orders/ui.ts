@@ -57,6 +57,30 @@ export function isOverdue(order: Order): boolean {
   return new Date(order.dueDate).getTime() < Date.now();
 }
 
+// Vence hoy: dueDate es hoy y estado activo (no completada/cancelada).
+export function isDueToday(order: Order): boolean {
+  if (!order.dueDate) return false;
+  if (order.status === "completada" || order.status === "cancelada") return false;
+  
+  const today = new Date();
+  const dueDate = new Date(order.dueDate);
+  
+  return dueDate.toDateString() === today.toDateString();
+}
+
+// Vence mañana: dueDate es mañana y estado activo (no completada/cancelada).
+export function isDueTomorrow(order: Order): boolean {
+  if (!order.dueDate) return false;
+  if (order.status === "completada" || order.status === "cancelada") return false;
+  
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const dueDate = new Date(order.dueDate);
+  
+  return dueDate.toDateString() === tomorrow.toDateString();
+}
+
 export function formatDueDate(dueDate: string | null): string {
   if (!dueDate) return "—";
   const d = new Date(dueDate);

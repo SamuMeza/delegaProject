@@ -1,6 +1,6 @@
 import { db } from "@/lib/db/delegaDb";
 import { env } from "@/lib/config/env";
-import type { Client, Config, Operator } from "@/lib/types";
+import type { Client, Config, Operator, ServiceType } from "@/lib/types";
 
 const CONFIG_ID = "app";
 const SEED_PASSWORD = "cambia_este_hash";
@@ -12,6 +12,7 @@ function defaultConfig(): Config {
     sessionTimeoutHours: DEFAULT_TIMEOUT_HOURS,
     orderCounter: 0,
     subscriptionCounter: 0,
+    notificationEnabled: true,
     priceRanges: {
       ensayo: { min: 3, max: 15 },
       presentacion: { min: 3, max: 15 },
@@ -46,17 +47,22 @@ function seedOperators(): Operator[] {
     user: string | undefined,
     hash: string | undefined,
     name: string,
+    services: ServiceType[],
+    color: string,
   ): Operator => ({
     id,
     username: user ?? id,
     displayName: name,
     passwordHash: hash && hash !== "hash_sha256_aqui" ? hash : SEED_PASSWORD,
     role: "operator",
+    services,
+    color,
+    active: true,
     createdAt: now,
   });
   return [
-    make("op_001", env.operator1User, env.operator1PassHash, env.operator1Name),
-    make("op_002", env.operator2User, env.operator2PassHash, env.operator2Name),
+    make("op_001", env.operator1User, env.operator1PassHash, env.operator1Name, ["ensayo", "presentacion", "investigacion", "formato"], "#3b82f6"),
+    make("op_002", env.operator2User, env.operator2PassHash, env.operator2Name, ["diseno", "video"], "#10b981"),
   ];
 }
 

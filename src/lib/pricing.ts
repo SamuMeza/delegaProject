@@ -31,7 +31,7 @@ const ADJUSTMENTS: Record<string, Record<string, number>> = {
   },
 };
 
-export function estimatePrice(serviceType: ServiceType, params?: Record<string, unknown>): number {
+export function estimatePrice(serviceType: ServiceType, params?: Record<string, unknown>, urgent?: boolean): number {
   const config = getServiceConfig(serviceType);
   if (!config) return 0;
 
@@ -47,6 +47,10 @@ export function estimatePrice(serviceType: ServiceType, params?: Record<string, 
         price += adjustments[adjustmentKey];
       }
     }
+  }
+
+  if (urgent) {
+    price = Math.round(price * 1.5);
   }
 
   return price;
