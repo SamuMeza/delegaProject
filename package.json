@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun --hot dev.ts",
+    "dev": "bun run dev.ts",
+    "dev:host": "bun run dev.ts --host",
     "start": "bun run build.ts",
     "build": "bun run build.ts"
   },
