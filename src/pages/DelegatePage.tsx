@@ -410,7 +410,7 @@ export function DelegatePage() {
       <div className="min-h-screen flex flex-col bg-surface-studio">
         {/* Header */}
         <header className="fixed top-0 w-full z-50 bg-surface-studio shadow-sm h-16">
-          <nav className="flex justify-between items-center h-16 w-full max-w-[1280px] mx-auto px-4 md:px-16">
+        <nav className="flex justify-between items-center h-16 w-full px-4 md:px-16">
             <Link to="/" className="font-display text-headline-md font-bold text-primary">
               Delega
             </Link>
