@@ -1,4 +1,13 @@
 import type { ServiceType } from "@/lib/types";
+import {
+  FileText,
+  Presentation,
+  Search,
+  AlignLeft,
+  Palette,
+  Video,
+  type LucideIcon,
+} from "lucide-react";
 
 export interface ConditionalField {
   name: string;
@@ -14,6 +23,7 @@ export interface ServiceTypeConfig {
   label: string;
   description: string;
   basePrice: number;
+  icon: LucideIcon;
   fields: ConditionalField[];
 }
 
@@ -23,6 +33,7 @@ export const SERVICE_TYPES: ServiceTypeConfig[] = [
     label: "Ensayo",
     description: "Redacción y corrección de ensayos académicos",
     basePrice: 5,
+    icon: FileText,
     fields: [
       { name: "wordCount", label: "Cantidad de palabras", type: "number", required: true, placeholder: "Ej: 1500" },
       { name: "academicLevel", label: "Nivel académico", type: "select", required: true, options: [{ value: "secundaria", label: "Secundaria" }, { value: "pregrado", label: "Pregrado" }, { value: "postgrado", label: "Postgrado" }] },
@@ -35,6 +46,7 @@ export const SERVICE_TYPES: ServiceTypeConfig[] = [
     label: "Presentación",
     description: "Diseño de diapositivas para exposiciones",
     basePrice: 4,
+    icon: Presentation,
     fields: [
       { name: "slideCount", label: "Número de diapositivas", type: "number", required: true, placeholder: "Ej: 10" },
       { name: "topic", label: "Tema de la presentación", type: "text", required: true, placeholder: "Ej: Cambio climático" },
@@ -46,6 +58,7 @@ export const SERVICE_TYPES: ServiceTypeConfig[] = [
     label: "Investigación",
     description: "Trabajos de investigación y monografías",
     basePrice: 5,
+    icon: Search,
     fields: [
       { name: "topic", label: "Tema de investigación", type: "text", required: true, placeholder: "Ej: Economía venezolana" },
       { name: "wordCount", label: "Cantidad de palabras", type: "number", required: true, placeholder: "Ej: 3000" },
@@ -58,6 +71,7 @@ export const SERVICE_TYPES: ServiceTypeConfig[] = [
     label: "Formato",
     description: "Aplicación de normas de estilo y formato",
     basePrice: 2,
+    icon: AlignLeft,
     fields: [
       { name: "formatType", label: "Norma de formato", type: "select", required: true, options: [{ value: "APA", label: "APA" }, { value: "MLA", label: "MLA" }, { value: "Chicago", label: "Chicago" }] },
       { name: "documentType", label: "Tipo de documento", type: "select", required: true, options: [{ value: "tesis", label: "Tesis" }, { value: "monografia", label: "Monografía" }, { value: "articulo", label: "Artículo" }, { value: "otro", label: "Otro" }] },
@@ -69,6 +83,7 @@ export const SERVICE_TYPES: ServiceTypeConfig[] = [
     label: "Diseño",
     description: "Creación de piezas gráficas y visuales",
     basePrice: 3,
+    icon: Palette,
     fields: [
       { name: "designType", label: "Tipo de diseño", type: "select", required: true, options: [{ value: "logo", label: "Logo" }, { value: "infographic", label: "Infografía" }, { value: "banner", label: "Banner" }] },
       { name: "dimensions", label: "Dimensiones (px)", type: "text", required: false, placeholder: "Ej: 1080x1080" },
@@ -80,6 +95,7 @@ export const SERVICE_TYPES: ServiceTypeConfig[] = [
     label: "Video",
     description: "Edición y producción de videos",
     basePrice: 8,
+    icon: Video,
     fields: [
       { name: "duration", label: "Duración estimada", type: "select", required: true, options: [{ value: "15-30s", label: "15-30 segundos" }, { value: "1-3min", label: "1-3 minutos" }, { value: "3-5min", label: "3-5 minutos" }, { value: "mas", label: "Más de 5 minutos" }] },
       { name: "style", label: "Estilo de video", type: "select", required: true, options: [{ value: "explainer", label: "Explicativo" }, { value: "tutorial", label: "Tutorial" }, { value: "promo", label: "Promocional" }] },

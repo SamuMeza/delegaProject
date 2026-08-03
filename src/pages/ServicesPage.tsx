@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { LandingLayout } from "@/components/landing/LandingLayout";
 import { SERVICE_TYPES } from "@/lib/config/serviceTypes";
+import { AlertTriangle } from "lucide-react";
 
 export function ServicesPage() {
   return (
@@ -14,6 +15,17 @@ export function ServicesPage() {
           desde $3.
         </p>
 
+        {/* Section header with urgency badge */}
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="font-display text-headline-sm text-primary font-semibold">
+            Servicios Individuales
+          </h2>
+          <span className="inline-flex items-center gap-1.5 bg-error-container text-urgency-alert rounded-full px-3 py-1.5 text-sm font-semibold">
+            <AlertTriangle className="w-4 h-4" />
+            Tarifa de urgencia (+50%) aplica a pedidos con menos de 48h
+          </span>
+        </div>
+
         <div className="mb-12 grid gap-4">
           {SERVICE_TYPES.map((s) => (
             <div
@@ -21,7 +33,7 @@ export function ServicesPage() {
               className="bg-surface-container-lowest rounded-xl shadow-ambient hover:shadow-ambient-hover transition-shadow flex flex-col gap-2 p-6 md:flex-row md:items-center md:justify-between"
             >
               <div>
-                <h2 className="text-lg font-semibold capitalize text-primary">{s.label}</h2>
+                <h3 className="text-lg font-semibold capitalize text-primary">{s.label}</h3>
                 <p className="text-sm text-on-surface-variant">{s.description}</p>
               </div>
               <div className="text-right">
@@ -32,7 +44,7 @@ export function ServicesPage() {
         </div>
 
         {/* Quarterly plan */}
-        <div className="mb-12 rounded-xl border-2 border-secondary/20 bg-secondary/5 p-6 text-center">
+        <div className="mb-12 rounded-xl border border-border-subtle bg-surface-container-lowest p-8 text-center shadow-ambient">
           <h2 className="font-display text-headline-sm text-primary font-bold">
             Suscripción trimestral
           </h2>

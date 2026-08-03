@@ -72,6 +72,9 @@ export function ContactPage() {
               Cargando datos de pago...
             </p>
           )}
+          <p className="mt-4 text-sm text-on-surface-variant">
+            Usa el ID de tu orden como referencia de pago
+          </p>
         </section>
 
         {/* Disclaimers */}

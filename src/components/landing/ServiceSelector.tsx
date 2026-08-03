@@ -9,24 +9,39 @@ export function ServiceSelector({
   onSelect: (service: ServiceTypeConfig) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-      {SERVICE_TYPES.map((s) => (
-        <button
-          key={s.id}
-          type="button"
-          onClick={() => onSelect(s)}
-          className={cn(
-            "flex flex-col items-center justify-center gap-1 rounded-xl border-2 px-4 py-4 text-center transition-all min-h-[100px]",
-            selected === s.id
-              ? "border-primary bg-primary/5 shadow-ambient"
-              : "border-border-subtle bg-surface-container-lowest shadow-ambient hover:shadow-ambient-hover hover:border-primary/40",
-          )}
-        >
-          <span className="text-lg font-semibold capitalize text-primary">{s.label}</span>
-          <span className="text-xs text-on-surface-variant">{s.description}</span>
-          <span className="mt-1 text-sm font-bold text-secondary">Desde ${s.basePrice}</span>
-        </button>
-      ))}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {SERVICE_TYPES.map((s) => {
+        const Icon = s.icon;
+        const isSelected = selected === s.id;
+        return (
+          <label
+            key={s.id}
+            className={cn(
+              "relative flex flex-col items-start gap-4 rounded-xl border-2 p-6 cursor-pointer transition-all",
+              isSelected
+                ? "border-secondary bg-secondary-container shadow-ambient"
+                : "border-border-subtle bg-surface-container-lowest shadow-ambient hover:shadow-ambient-hover hover:border-primary-fixed",
+            )}
+          >
+            <input
+              type="radio"
+              name="serviceType"
+              value={s.id}
+              checked={isSelected}
+              onChange={() => onSelect(s)}
+              className="sr-only"
+            />
+            <Icon className="w-8 h-8 text-primary" strokeWidth={1.5} />
+            <div>
+              <h3 className="text-lg font-semibold text-primary">{s.label}</h3>
+              <p className="text-sm text-on-surface-variant mt-1">{s.description}</p>
+            </div>
+            <span className="text-sm font-semibold text-secondary">
+              Desde ${s.basePrice}
+            </span>
+          </label>
+        );
+      })}
     </div>
   );
 }
