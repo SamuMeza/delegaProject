@@ -445,7 +445,7 @@ export function DelegatePage() {
           </Link>
           <button
             onClick={() => navigate("/servicios")}
-            className="hidden md:inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors"
           >
             <X className="w-4 h-4" />
             Cancelar
