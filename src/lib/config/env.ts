@@ -10,7 +10,7 @@ export const env = {
   operator2User: typeof process !== "undefined" ? process.env?.BUN_PUBLIC_OPERATOR_2_USER : undefined,
   operator2PassHash: typeof process !== "undefined" ? process.env?.BUN_PUBLIC_OPERATOR_2_PASS_HASH : undefined,
   operator2Name: typeof process !== "undefined" ? process.env?.BUN_PUBLIC_OPERATOR_2_NAME : undefined,
-  whatsappNumber: typeof process !== "undefined" ? process.env?.BUN_PUBLIC_WHATSAPP_NUMBER ?? "584121234567" : "584121234567",
+  whatsappNumber: typeof process !== "undefined" ? process.env?.BUN_PUBLIC_WHATSAPP_NUMBER ?? "584167050424" : "584167050424",
   trackingSalt: typeof process !== "undefined" ? process.env?.BUN_PUBLIC_TRACKING_SALT ?? "delega-default-salt" : "delega-default-salt",
   sessionTimeoutHours: Number(typeof process !== "undefined" ? process.env?.BUN_PUBLIC_SESSION_TIMEOUT_HOURS ?? "8" : "8"),
 };

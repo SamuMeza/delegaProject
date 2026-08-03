@@ -12,10 +12,10 @@ import { X, Check, ChevronLeft, ChevronRight, Send, Pencil } from "lucide-react"
 import type { ServiceType } from "@/lib/types";
 
 const STEPS = [
-  { num: 1, label: "Service" },
-  { num: 2, label: "Details" },
-  { num: 3, label: "Contact" },
-  { num: 4, label: "Summary" },
+  { num: 1, label: "Servicio" },
+  { num: 2, label: "Detalles" },
+  { num: 3, label: "Contacto" },
+  { num: 4, label: "Resumen" },
 ];
 
 interface FormState {
@@ -87,10 +87,10 @@ function Step1({
   return (
     <div>
       <h2 className="mb-2 font-display text-headline-md text-primary">
-        What do you need help with?
+        ¿Qué necesitas?
       </h2>
       <p className="mb-8 text-on-surface-variant">
-        Select the type of academic service you wish to delegate.
+        Selecciona el tipo de servicio académico que deseas delegar.
       </p>
       <ServiceSelector selected={selected} onSelect={onSelect} />
     </div>
@@ -118,10 +118,10 @@ function Step2({
   return (
     <div>
       <h2 className="mb-2 font-display text-headline-md text-primary">
-        Provide the Details
+        Proporciona los detalles
       </h2>
       <p className="mb-8 text-on-surface-variant">
-        The more specific you are, the better the result.
+        Mientras más específico seas, mejor será el resultado.
       </p>
 
       <div className="space-y-6">
@@ -136,7 +136,7 @@ function Step2({
         {/* Additional Instructions */}
         <div>
           <label htmlFor="description" className="mb-1 block text-sm font-semibold text-on-surface uppercase tracking-wider">
-            Additional Instructions (Optional)
+            Instrucciones adicionales (Opcional)
           </label>
           <textarea
             id="description"
@@ -147,15 +147,15 @@ function Step2({
             }}
             className="w-full rounded-lg border border-border-subtle bg-surface-studio px-4 py-3 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-secondary focus-visible:outline-offset-2 resize-none"
             rows={4}
-            placeholder="Include any specific formatting rules or materials to reference..."
+            placeholder="Incluye reglas de formato específicas, estilos de citación o materiales de referencia..."
           />
         </div>
 
         {/* Upload zone (visual) */}
         <div className="border-2 border-dashed border-border-subtle rounded-lg p-6 bg-surface-studio hover:bg-surface-container transition-colors cursor-pointer flex flex-col items-center gap-2 text-center">
           <Send className="w-8 h-8 text-on-surface-variant" />
-          <p className="text-sm font-semibold text-on-surface">Upload Reference Files</p>
-          <p className="text-xs text-on-surface-variant">Max 10MB per file (PDF, DOCX)</p>
+          <p className="text-sm font-semibold text-on-surface">Subir archivos de referencia</p>
+          <p className="text-xs text-on-surface-variant">Máximo 10MB por archivo (PDF, DOCX)</p>
         </div>
       </div>
     </div>
@@ -176,16 +176,16 @@ function Step3({
   return (
     <div className="max-w-md mx-auto">
       <h2 className="mb-2 font-display text-headline-md text-primary">
-        How can we reach you?
+        ¿Cómo podemos contactarte?
       </h2>
       <p className="mb-8 text-on-surface-variant">
-        We use WhatsApp to deliver updates and final materials directly to you.
+        Usamos WhatsApp para enviar actualizaciones y materiales finales directamente a ti.
       </p>
 
       <div className="space-y-6">
         <div>
           <label htmlFor="clientName" className="mb-1 block text-sm font-semibold text-on-surface uppercase tracking-wider">
-            Full Name <span className="text-error">*</span>
+            Nombre completo <span className="text-error">*</span>
           </label>
           <input
             id="clientName"
@@ -195,14 +195,14 @@ function Step3({
               setErrors((p) => ({ ...p, clientName: "" }));
             }}
             className="h-12 w-full rounded-lg border border-border-subtle bg-surface-studio px-4 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-secondary focus-visible:outline-offset-2"
-            placeholder="Ej: Jane Doe"
+            placeholder="Ej: María Pérez"
           />
           {errors.clientName && <p className="mt-1 text-xs text-error">{errors.clientName}</p>}
         </div>
 
         <div>
           <label htmlFor="clientContact" className="mb-1 block text-sm font-semibold text-on-surface uppercase tracking-wider">
-            WhatsApp Number <span className="text-error">*</span>
+            Número de WhatsApp <span className="text-error">*</span>
           </label>
           <div className="flex">
             <span className="flex items-center px-4 rounded-l-lg border border-r-0 border-border-subtle bg-surface-container text-sm text-on-surface-variant">
@@ -216,12 +216,12 @@ function Step3({
                 setErrors((p) => ({ ...p, clientContact: "" }));
               }}
               className="h-12 flex-1 rounded-r-lg border border-border-subtle bg-surface-studio px-4 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-secondary focus-visible:outline-offset-2"
-              placeholder="5841212345678"
+                  placeholder="584167050424"
             />
           </div>
           {errors.clientContact && <p className="mt-1 text-xs text-error">{errors.clientContact}</p>}
           <p className="mt-1 text-xs text-on-surface-variant text-right">
-            Include country code if outside US.
+            Incluye el código de país.
           </p>
         </div>
       </div>
@@ -249,49 +249,49 @@ function Step4({
       </div>
 
       <h2 className="mb-2 font-display text-headline-md text-primary">
-        Review Your Request
+        Revisa tu solicitud
       </h2>
       <p className="mb-8 text-on-surface-variant">
-        Please confirm the details below before sending.
+        Confirma los datos antes de enviar.
       </p>
 
       {/* Summary card */}
       <div className="bg-surface-studio rounded-lg p-6 border border-border-subtle text-left mb-8">
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
           <div>
-            <dt className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Service Type</dt>
+            <dt className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Tipo de servicio</dt>
             <dd className="mt-1 text-sm font-semibold text-primary capitalize">{config?.label ?? serviceType}</dd>
           </div>
           <div>
-            <dt className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Est. Price</dt>
+            <dt className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Precio estimado</dt>
             <dd className="mt-1 text-sm font-semibold text-secondary">~${estimatedPrice.toFixed(2)}</dd>
           </div>
           {form.fieldValues.topic && (
             <div className="sm:col-span-2">
-              <dt className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Topic</dt>
+              <dt className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Tema</dt>
               <dd className="mt-1 text-sm text-primary">{form.fieldValues.topic}</dd>
             </div>
           )}
           {form.fieldValues.slideCount && (
             <div>
-              <dt className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Slides</dt>
+              <dt className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Diapositivas</dt>
               <dd className="mt-1 text-sm text-primary">{form.fieldValues.slideCount}</dd>
             </div>
           )}
           {form.fieldValues.wordCount && (
             <div>
-              <dt className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Words</dt>
+              <dt className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Palabras</dt>
               <dd className="mt-1 text-sm text-primary">{form.fieldValues.wordCount}</dd>
             </div>
           )}
           {form.description && (
             <div className="sm:col-span-2">
-              <dt className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Description</dt>
+              <dt className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Descripción</dt>
               <dd className="mt-1 text-sm text-primary">{form.description}</dd>
             </div>
           )}
           <div className="sm:col-span-2">
-            <dt className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Contact</dt>
+            <dt className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Contacto</dt>
             <dd className="mt-1 text-sm text-primary">{form.clientName} (+{form.clientContact})</dd>
           </div>
         </dl>
@@ -305,7 +305,7 @@ function Step4({
           className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-border-subtle bg-transparent px-6 py-3 text-sm font-semibold text-primary hover:border-outline transition-colors"
         >
           <Pencil className="w-4 h-4" />
-          Edit Details
+          Editar detalles
         </button>
       </div>
     </div>
@@ -444,11 +444,11 @@ export function DelegatePage() {
             Delega
           </Link>
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/servicios")}
             className="hidden md:inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors"
           >
             <X className="w-4 h-4" />
-            Cancel
+            Cancelar
           </button>
         </nav>
       </header>
@@ -500,7 +500,7 @@ export function DelegatePage() {
                       className="inline-flex items-center gap-2 rounded-lg border-2 border-border-subtle bg-transparent px-6 py-3 text-sm font-semibold text-primary hover:border-outline transition-colors"
                     >
                       <ChevronLeft className="w-4 h-4" />
-                      Back
+                      Atrás
                     </button>
                   ) : (
                     <div />
@@ -515,7 +515,7 @@ export function DelegatePage() {
                       }}
                       className="inline-flex items-center gap-2 rounded-lg bg-secondary px-6 py-3 text-sm font-semibold text-on-secondary transition-all hover:bg-secondary/90 shadow-ambient hover:shadow-ambient-hover"
                     >
-                      Review Details
+                      Revisar solicitud
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   ) : (
@@ -525,7 +525,7 @@ export function DelegatePage() {
                       disabled={step === 1 && !selectedService}
                       className="inline-flex items-center gap-2 rounded-lg bg-secondary px-6 py-3 text-sm font-semibold text-on-secondary transition-all hover:bg-secondary/90 shadow-ambient hover:shadow-ambient-hover disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Next Step
+                      Siguiente
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   )}
@@ -541,7 +541,7 @@ export function DelegatePage() {
                     className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-8 py-3 text-sm font-semibold text-white transition-all hover:bg-[#1DA851] shadow-ambient hover:shadow-ambient-hover"
                   >
                     <Send className="w-4 h-4" />
-                    Send to WhatsApp
+                    Enviar por WhatsApp
                   </button>
                 </div>
               )}
