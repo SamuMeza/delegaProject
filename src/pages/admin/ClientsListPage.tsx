@@ -10,17 +10,10 @@ import { useClients, useSubscriptions } from "@/hooks/useDelegaDB";
 import { db } from "@/lib/db/delegaDb";
 import type { Client } from "@/lib/types";
 
-function daysUntilEnd(endDate: string): number {
-  const now = new Date();
-  const end = new Date(endDate);
-  return Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+function getCurrentMonthKey(): string {
+  return `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
 }
 
-function ordersThisMonth(sub: Client["subscription"]): number {
-  if (!sub) return 0;
-  const key = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
-  return sub.usedPerMonth[key] ?? 0;
-}
 
 export function ClientsListPage() {
   const clients = useClients();
@@ -72,8 +65,16 @@ export function ClientsListPage() {
   function getClientAlert(client: Client): { show: boolean; days: number } {
     const sub = activeSubs.find((s) => s.clientPhone === client.phone);
     if (!sub) return { show: false, days: 0 };
-    const days = daysUntilEnd(sub.endDate);
+    const days = Math.ceil((new Date(sub.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     return { show: days <= 15, days };
+  }
+
+  const currentMonth = getCurrentMonthKey();
+  const ordersThisMonthByPhone = new Map<string, number>();
+  for (const order of allOrders) {
+    if (order.createdAt.startsWith(currentMonth)) {
+      ordersThisMonthByPhone.set(order.clientPhone, (ordersThisMonthByPhone.get(order.clientPhone) ?? 0) + 1);
+    }
   }
 
   return (
@@ -144,7 +145,7 @@ export function ClientsListPage() {
                     .map((client) => {
                       const alert = getClientAlert(client);
                       const sub = client.subscription;
-                      const monthly = ordersThisMonth(client.subscription);
+                      const monthly = ordersThisMonthByPhone.get(client.phone) ?? 0;
                       return (
                         <tr key={client.phone} className="hover:bg-surface-container-low transition-colors">
                           <td className="py-4 px-6">

@@ -234,6 +234,7 @@ export interface Config {
   orderCounter: number;
   subscriptionCounter: number;
   notificationEnabled: boolean;
+  serviceOperatorMap: Record<ServiceType, string>;
   priceRanges: PriceRanges;
   faqs: FaqItem[];
   pagoMovil: PagoMovilInfo;

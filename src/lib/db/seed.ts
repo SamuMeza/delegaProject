@@ -13,6 +13,14 @@ function defaultConfig(): Config {
     orderCounter: 0,
     subscriptionCounter: 0,
     notificationEnabled: true,
+    serviceOperatorMap: {
+      ensayo: "op_001",
+      presentacion: "op_001",
+      investigacion: "op_001",
+      formato: "op_001",
+      diseno: "op_002",
+      video: "op_002",
+    },
     priceRanges: {
       ensayo: { min: 3, max: 15 },
       presentacion: { min: 3, max: 15 },
@@ -72,6 +80,22 @@ export async function seedDatabase(): Promise<void> {
   const configCount = await db.config.count();
   if (configCount === 0) {
     await db.config.add(defaultConfig());
+  } else {
+    // Migración: si el config existe pero le falta serviceOperatorMap, lo inyectamos.
+    const existingConfig = await db.config.get(CONFIG_ID);
+    if (existingConfig && !existingConfig.serviceOperatorMap) {
+      await db.config.update(CONFIG_ID, {
+        serviceOperatorMap: {
+          ensayo: "op_001",
+          presentacion: "op_001",
+          investigacion: "op_001",
+          formato: "op_001",
+          diseno: "op_002",
+          video: "op_002",
+        },
+        updatedAt: Date.now(),
+      });
+    }
   }
 
   const operatorCount = await db.operators.count();
