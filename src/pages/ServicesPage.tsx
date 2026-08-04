@@ -128,11 +128,12 @@ export function ServicesPage() {
         <h2 className="font-display text-headline-sm text-primary font-semibold mb-2">
           Planes Trimestrales
         </h2>
-        <p className="mb-8 text-on-surface-variant">
+        <h3>Proximamente</h3>
+        {/* <p className="mb-8 text-on-surface-variant">
           Combina servicios y ahorra durante el periodo académico.
-        </p>
+        </p> */}
 
-        <div className="mb-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* <div className="mb-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {QUARTERLY_PLANS.map((plan) => (
             <div
               key={plan.name}
@@ -179,7 +180,7 @@ export function ServicesPage() {
               </Link>
             </div>
           ))}
-        </div>
+        </div> */}
 
         {/* CTA */}
         <div className="text-center">

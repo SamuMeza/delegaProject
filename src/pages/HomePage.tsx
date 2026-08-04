@@ -6,6 +6,11 @@ export function HomePage() {
     <LandingLayout>
       {/* Hero Section */}
       <section className="w-full max-w-[1280px] mx-auto px-4 md:px-16 pt-24 pb-32">
+        {/* Banner informativo de suscripciones */}
+        <div className="mb-10 p-4 rounded-xl border border-secondary/20 bg-secondary/5 text-center text-sm font-semibold text-secondary">
+          📢 ¡Próximamente! Estaremos incluyendo planes de suscripciones trimestrales para brindarte mayor comodidad en tu periodo académico.
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="flex flex-col gap-6">
             <h1 className="font-display text-display-lg-mobile md:text-display-lg text-primary text-balance">
@@ -73,7 +78,7 @@ export function HomePage() {
         <div className="grid gap-4 md:grid-cols-3">
           {[
             { label: "Tareas individuales", range: "$3 – $15", desc: "Por tarea, según el tipo y la complejidad" },
-            { label: "Suscripción trimestral", range: "~$25", desc: "Hasta 4 tareas por mes durante 3 meses" },
+            { label: "Suscripción trimestral", range: "proximamente", desc: "" }, //range: $25, desc: "Hasta 4 tareas por mes durante 3 meses"
             { label: "Sin sorpresas", range: "Precio fijo", desc: "Confirmamos el precio antes de empezar" },
           ].map((item) => (
             <div key={item.label} className="rounded-xl border-2 border-secondary/20 bg-secondary/5 p-6 text-center">
