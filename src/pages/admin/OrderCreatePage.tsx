@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { OrderDetailsFields } from "@/components/OrderDetailsFields";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useDelegaDB";
@@ -225,12 +225,17 @@ export function OrderCreatePage() {
 
         <div>
           <Label htmlFor="serviceType" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Tipo de servicio *</Label>
-          <Select id="serviceType" value={serviceType} onValueChange={(v) => handleServiceChange(v as ServiceType)}>
-            {SERVICE_TYPES.map((s) => (
-              <option key={s} value={s}>
-                {SERVICE_TYPE_LABELS[s]}
-              </option>
-            ))}
+          <Select value={serviceType} onValueChange={(v) => handleServiceChange(v as ServiceType)}>
+            <SelectTrigger id="serviceType" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SERVICE_TYPES.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {SERVICE_TYPE_LABELS[s]}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
         </div>
 

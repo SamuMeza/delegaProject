@@ -15,7 +15,9 @@ const SERVICE_TYPE_MAP: Record<string, ServiceType> = {
 function extractLine(text: string, emoji: string): string | undefined {
   const regex = new RegExp(`${emoji}\\s*(.+)`, "i");
   const match = text.match(regex);
-  return match?.[1]?.trim();
+  if (!match?.[1]) return undefined;
+  // Strip Unicode variation selectors and leading/trailing whitespace
+  return match[1].replace(/[\uFE0F\u200D\u20E3]/g, "").trim();
 }
 
 function parseParameters(raw: string): Record<string, string> {

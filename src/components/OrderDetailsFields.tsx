@@ -1,7 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type {
   OrderDetails,
   OrderDetailsDiseno,
@@ -58,19 +58,29 @@ export function OrderDetailsFields({ serviceType, value, onChange }: Props) {
           </div>
           <div>
             <Label htmlFor="d-pag">Páginas</Label>
-            <Select id="d-pag" value={v.paginas ?? "1-3"} onValueChange={(val) => set({ paginas: val })}>
-              <option value="1-3">1-3</option>
-              <option value="4-7">4-7</option>
-              <option value="8+">8+</option>
+            <Select value={v.paginas ?? "1-3"} onValueChange={(val) => set({ paginas: val })}>
+              <SelectTrigger id="d-pag" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1-3">1-3</SelectItem>
+                <SelectItem value="4-7">4-7</SelectItem>
+                <SelectItem value="8+">8+</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <div>
             <Label htmlFor="d-norm">Normas</Label>
-            <Select id="d-norm" value={v.normas ?? "ninguna"} onValueChange={(val) => set({ normas: val })}>
-              <option value="ninguna">Ninguna</option>
-              <option value="APA">APA</option>
-              <option value="ISO">ISO</option>
-              <option value="otra">Otra</option>
+            <Select value={v.normas ?? "ninguna"} onValueChange={(val) => set({ normas: val })}>
+              <SelectTrigger id="d-norm" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ninguna">Ninguna</SelectItem>
+                <SelectItem value="APA">APA</SelectItem>
+                <SelectItem value="ISO">ISO</SelectItem>
+                <SelectItem value="otra">Otra</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <Check label="Tiene guía" checked={v.tieneGuia ?? false} onChange={(b) => set({ tieneGuia: b })} />
@@ -91,19 +101,29 @@ export function OrderDetailsFields({ serviceType, value, onChange }: Props) {
           </div>
           <div>
             <Label htmlFor="d-diap">Diapositivas</Label>
-            <Select id="d-diap" value={v.diapositivas ?? "hasta-10"} onValueChange={(val) => set({ diapositivas: val })}>
-              <option value="hasta-10">Hasta 10</option>
-              <option value="11-20">11-20</option>
-              <option value="mas-20">Más de 20</option>
+            <Select value={v.diapositivas ?? "hasta-10"} onValueChange={(val) => set({ diapositivas: val })}>
+              <SelectTrigger id="d-diap" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="hasta-10">Hasta 10</SelectItem>
+                <SelectItem value="11-20">11-20</SelectItem>
+                <SelectItem value="mas-20">Más de 20</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <div>
             <Label htmlFor="d-est">Estilo</Label>
-            <Select id="d-est" value={v.estilo ?? "no-importa"} onValueChange={(val) => set({ estilo: val })}>
-              <option value="minimalista">Minimalista</option>
-              <option value="colorido">Colorido</option>
-              <option value="formal">Formal</option>
-              <option value="no-importa">No importa</option>
+            <Select value={v.estilo ?? "no-importa"} onValueChange={(val) => set({ estilo: val })}>
+              <SelectTrigger id="d-est" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="minimalista">Minimalista</SelectItem>
+                <SelectItem value="colorido">Colorido</SelectItem>
+                <SelectItem value="formal">Formal</SelectItem>
+                <SelectItem value="no-importa">No importa</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <div>
@@ -112,10 +132,15 @@ export function OrderDetailsFields({ serviceType, value, onChange }: Props) {
           </div>
           <div>
             <Label htmlFor="d-img">Incluye imágenes</Label>
-            <Select id="d-img" value={v.incluyeImagenes ?? "no"} onValueChange={(val) => set({ incluyeImagenes: val })}>
-              <option value="si-busca">Sí, Delega busca</option>
-              <option value="si-proporciona">Sí, cliente proporciona</option>
-              <option value="no">No</option>
+            <Select value={v.incluyeImagenes ?? "no"} onValueChange={(val) => set({ incluyeImagenes: val })}>
+              <SelectTrigger id="d-img" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="si-busca">Sí, Delega busca</SelectItem>
+                <SelectItem value="si-proporciona">Sí, cliente proporciona</SelectItem>
+                <SelectItem value="no">No</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <Check label="Tiene guía" checked={v.tieneGuia ?? false} onChange={(b) => set({ tieneGuia: b })} />
@@ -136,27 +161,42 @@ export function OrderDetailsFields({ serviceType, value, onChange }: Props) {
           </div>
           <div>
             <Label htmlFor="d-prof">Profundidad</Label>
-            <Select id="d-prof" value={v.profundidad ?? "media"} onValueChange={(val) => set({ profundidad: val })}>
-              <option value="basica">Básica</option>
-              <option value="media">Media</option>
-              <option value="avanzada">Avanzada</option>
+            <Select value={v.profundidad ?? "media"} onValueChange={(val) => set({ profundidad: val })}>
+              <SelectTrigger id="d-prof" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="basica">Básica</SelectItem>
+                <SelectItem value="media">Media</SelectItem>
+                <SelectItem value="avanzada">Avanzada</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <div>
             <Label htmlFor="d-fuen">Fuentes mínimas</Label>
-            <Select id="d-fuen" value={v.fuentesMinimas ?? "no-importa"} onValueChange={(val) => set({ fuentesMinimas: val })}>
-              <option value="no-importa">No importa</option>
-              <option value="3-5">3-5</option>
-              <option value="6-10">6-10</option>
-              <option value="mas-10">Más de 10</option>
+            <Select value={v.fuentesMinimas ?? "no-importa"} onValueChange={(val) => set({ fuentesMinimas: val })}>
+              <SelectTrigger id="d-fuen" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="no-importa">No importa</SelectItem>
+                <SelectItem value="3-5">3-5</SelectItem>
+                <SelectItem value="6-10">6-10</SelectItem>
+                <SelectItem value="mas-10">Más de 10</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <div>
             <Label htmlFor="d-forment">Formato de entrega</Label>
-            <Select id="d-forment" value={v.formatoEntrega ?? "resumen"} onValueChange={(val) => set({ formatoEntrega: val })}>
-              <option value="resumen">Resumen</option>
-              <option value="fichas">Fichas</option>
-              <option value="estado-del-arte">Estado del arte</option>
+            <Select value={v.formatoEntrega ?? "resumen"} onValueChange={(val) => set({ formatoEntrega: val })}>
+              <SelectTrigger id="d-forment" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="resumen">Resumen</SelectItem>
+                <SelectItem value="fichas">Fichas</SelectItem>
+                <SelectItem value="estado-del-arte">Estado del arte</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <Check label="Tiene guía" checked={v.tieneGuia ?? false} onChange={(b) => set({ tieneGuia: b })} />
@@ -169,18 +209,28 @@ export function OrderDetailsFields({ serviceType, value, onChange }: Props) {
         <div className="space-y-3">
           <div>
             <Label htmlFor="d-td">Tipo de documento</Label>
-            <Select id="d-td" value={v.tipoDocumento ?? "word"} onValueChange={(val) => set({ tipoDocumento: val })}>
-              <option value="word">Word</option>
-              <option value="pdf">PDF</option>
-              <option value="powerpoint">PowerPoint</option>
+            <Select value={v.tipoDocumento ?? "word"} onValueChange={(val) => set({ tipoDocumento: val })}>
+              <SelectTrigger id="d-td" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="word">Word</SelectItem>
+                <SelectItem value="pdf">PDF</SelectItem>
+                <SelectItem value="powerpoint">PowerPoint</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <div>
             <Label htmlFor="d-norm">Norma</Label>
-            <Select id="d-norm" value={v.norma ?? "APA"} onValueChange={(val) => set({ norma: val })}>
-              <option value="APA">APA</option>
-              <option value="ISO">ISO</option>
-              <option value="otra">Otra</option>
+            <Select value={v.norma ?? "APA"} onValueChange={(val) => set({ norma: val })}>
+              <SelectTrigger id="d-norm" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="APA">APA</SelectItem>
+                <SelectItem value="ISO">ISO</SelectItem>
+                <SelectItem value="otra">Otra</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <Check label="Necesita índice" checked={v.necesitaIndice ?? false} onChange={(b) => set({ necesitaIndice: b })} />
@@ -198,11 +248,16 @@ export function OrderDetailsFields({ serviceType, value, onChange }: Props) {
         <div className="space-y-3">
           <div>
             <Label htmlFor="d-td2">Tipo de diseño</Label>
-            <Select id="d-td2" value={v.tipoDiseno ?? "flayer"} onValueChange={(val) => set({ tipoDiseno: val })}>
-              <option value="flayer">Flayer</option>
-              <option value="infografia">Infografía</option>
-              <option value="portada">Portada</option>
-              <option value="otro">Otro</option>
+            <Select value={v.tipoDiseno ?? "flayer"} onValueChange={(val) => set({ tipoDiseno: val })}>
+              <SelectTrigger id="d-td2" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="flayer">Flayer</SelectItem>
+                <SelectItem value="infografia">Infografía</SelectItem>
+                <SelectItem value="portada">Portada</SelectItem>
+                <SelectItem value="otro">Otro</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <div>
@@ -231,47 +286,72 @@ export function OrderDetailsFields({ serviceType, value, onChange }: Props) {
         <div className="space-y-3">
           <div>
             <Label htmlFor="d-tv">Tipo de video</Label>
-            <Select id="d-tv" value={v.tipoVideo ?? "corto-redes"} onValueChange={(val) => set({ tipoVideo: val })}>
-              <option value="corto-redes">Corto para redes</option>
-              <option value="presentacion">Presentación</option>
-              <option value="publicitario">Publicitario</option>
-              <option value="educativo">Educativo</option>
+            <Select value={v.tipoVideo ?? "corto-redes"} onValueChange={(val) => set({ tipoVideo: val })}>
+              <SelectTrigger id="d-tv" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="corto-redes">Corto para redes</SelectItem>
+                <SelectItem value="presentacion">Presentación</SelectItem>
+                <SelectItem value="publicitario">Publicitario</SelectItem>
+                <SelectItem value="educativo">Educativo</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <div>
             <Label htmlFor="d-dur">Duración</Label>
-            <Select id="d-dur" value={v.duracion ?? "15-30s"} onValueChange={(val) => set({ duracion: val })}>
-              <option value="15-30s">15-30s</option>
-              <option value="1-3min">1-3 min</option>
-              <option value="3-5min">3-5 min</option>
-              <option value="mas">Más</option>
+            <Select value={v.duracion ?? "15-30s"} onValueChange={(val) => set({ duracion: val })}>
+              <SelectTrigger id="d-dur" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="15-30s">15-30s</SelectItem>
+                <SelectItem value="1-3min">1-3 min</SelectItem>
+                <SelectItem value="3-5min">3-5 min</SelectItem>
+                <SelectItem value="mas">Más</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <div>
             <Label htmlFor="d-plat">Plataforma</Label>
-            <Select id="d-plat" value={v.plataforma ?? "tiktok"} onValueChange={(val) => set({ plataforma: val })}>
-              <option value="tiktok">TikTok</option>
-              <option value="facebook-reels">Facebook Reels</option>
-              <option value="facebook-video">Facebook Video</option>
-              <option value="youtube-shorts">YouTube Shorts</option>
-              <option value="otra">Otra</option>
+            <Select value={v.plataforma ?? "tiktok"} onValueChange={(val) => set({ plataforma: val })}>
+              <SelectTrigger id="d-plat" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="tiktok">TikTok</SelectItem>
+                <SelectItem value="facebook-reels">Facebook Reels</SelectItem>
+                <SelectItem value="facebook-video">Facebook Video</SelectItem>
+                <SelectItem value="youtube-shorts">YouTube Shorts</SelectItem>
+                <SelectItem value="otra">Otra</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <Check label="Tiene material" checked={v.tieneMaterial ?? false} onChange={(b) => set({ tieneMaterial: b })} />
           <div>
             <Label htmlFor="d-mus">Música de fondo</Label>
-            <Select id="d-mus" value={v.musicaFondo ?? "no-importa"} onValueChange={(val) => set({ musicaFondo: val })}>
-              <option value="si">Sí</option>
-              <option value="no">No</option>
-              <option value="no-importa">No importa</option>
+            <Select value={v.musicaFondo ?? "no-importa"} onValueChange={(val) => set({ musicaFondo: val })}>
+              <SelectTrigger id="d-mus" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="si">Sí</SelectItem>
+                <SelectItem value="no">No</SelectItem>
+                <SelectItem value="no-importa">No importa</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <div>
             <Label htmlFor="d-voz">Voz en off</Label>
-            <Select id="d-voz" value={v.voEnOff ?? "texto"} onValueChange={(val) => set({ voEnOff: val })}>
-              <option value="voz">Voz</option>
-              <option value="texto">Texto</option>
-              <option value="solo-musica">Solo música</option>
+            <Select value={v.vozEnOff ?? "texto"} onValueChange={(val) => set({ vozEnOff: val })}>
+              <SelectTrigger id="d-voz" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="voz">Voz</SelectItem>
+                <SelectItem value="texto">Texto</SelectItem>
+                <SelectItem value="solo-musica">Solo música</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <Check label="Tiene guion" checked={v.tieneGuion ?? false} onChange={(b) => set({ tieneGuion: b })} />
