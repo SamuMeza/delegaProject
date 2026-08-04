@@ -180,6 +180,26 @@ export type OrderDetails =
   | OrderDetailsDiseno
   | OrderDetailsVideo;
 
+export type PaymentStatus = "unpaid" | "partial" | "paid";
+
+export interface StatusTransition {
+  from: OrderStatus;
+  to: OrderStatus;
+  by: string;
+  at: number;
+}
+
+export interface OrderAttachment {
+  id: string;
+  orderId: string;
+  name: string;
+  mime: string;
+  size: number;
+  blob: Blob;
+  author: string;
+  uploadedAt: string;
+}
+
 export interface Order {
   id: string;
   clientPhone: string;
@@ -193,13 +213,15 @@ export interface Order {
   totalPaid: number;
   paymentRef: string;
   status: OrderStatus;
+  urgent: boolean;
+  paymentStatus: PaymentStatus;
+  statusHistory: StatusTransition[];
   createdAt: string;
   dueDate: string | null;
   completedAt: string | null;
   notes: OrderNote[];
   subscriptionId: string | null;
   coverageTipo: CoverageTipo;
-  files: OrderFile[];
 }
 
 export interface OperatorStats {

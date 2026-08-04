@@ -3,7 +3,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useOperators, useOrders } from "@/hooks/useDelegaDB";
 import { useOrderPermissions } from "@/lib/orders/permissions";
@@ -111,39 +110,47 @@ export function OrdersListPage() {
         </Button>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-variant" />
-          <Input
-            className="pl-9"
-            placeholder="Buscar por cliente, teléfono o ID..."
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            aria-label="Buscar órdenes por cliente, teléfono o ID"
-          />
-        </div>
-        <Select
-          value={statusFilter}
-          onValueChange={(v) => setStatusFilter(v as OrderStatus | "todas")}
-          aria-label="Filtrar por estado"
-        >
-          {STATUS_FILTERS.map((f) => (
-            <option key={f.value} value={f.value}>
-              {f.label}
-            </option>
-          ))}
-        </Select>
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-variant" />
+        <Input
+          className="pl-9"
+          placeholder="Buscar por cliente, teléfono o ID..."
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          aria-label="Buscar órdenes por cliente, teléfono o ID"
+        />
+      </div>
+
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por estado">
+        {STATUS_FILTERS.map((f) => (
+          <button
+            key={f.value}
+            type="button"
+            onClick={() => setStatusFilter(f.value)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+              statusFilter === f.value
+                ? "bg-primary text-on-primary"
+                : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
       </div>
 
       {orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border-subtle p-10 text-center bg-surface-container-lowest">
           <p className="text-sm text-on-surface-variant">
-            Aún no hay órdenes registradas.
+            {statusFilter === "todas"
+              ? "Aún no hay órdenes registradas."
+              : `No hay órdenes con estado "${ORDER_STATUS_LABELS[statusFilter as OrderStatus]}".`}
           </p>
-          <Button className="mt-4" onClick={() => navigate("/admin/ordenes/nueva")}>
-            <Plus className="h-4 w-4" />
-            Crear la primera orden
-          </Button>
+          {statusFilter === "todas" && (
+            <Button className="mt-4" onClick={() => navigate("/admin/ordenes/nueva")}>
+              <Plus className="h-4 w-4" />
+              Crear la primera orden
+            </Button>
+          )}
         </div>
       ) : (
         <div className="bg-surface-container-lowest rounded-xl shadow-ambient overflow-hidden">
