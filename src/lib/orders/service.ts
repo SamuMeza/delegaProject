@@ -49,7 +49,7 @@ export async function createOrder(
   }
 
   let orderId: string;
-  await db.transaction("rw", db.orders, db.config, db.activity_log, async () => {
+  await db.transaction("rw", db.orders, db.config, db.activity_log, db.clients, async () => {
     const cfg = await db.config.get("app");
     if (!cfg) throw new Error("Config no inicializada");
     const next = (cfg.orderCounter ?? 0) + 1;
@@ -81,6 +81,31 @@ export async function createOrder(
       subscriptionId: null,
     };
     await db.orders.add(order);
+
+    // Auto-crear o actualizar cliente
+    const existingClient = await db.clients.get(input.clientPhone);
+    if (existingClient) {
+      await db.clients.update(input.clientPhone, {
+        totalOrders: existingClient.totalOrders + 1,
+        totalSpent: existingClient.totalSpent + input.price,
+        history: [...existingClient.history, orderId],
+      });
+    } else {
+      await db.clients.add({
+        phone: input.clientPhone,
+        name: input.clientName,
+        totalOrders: 1,
+        totalSpent: input.price,
+        subscription: null,
+        history: [orderId],
+      });
+      await logActivity({
+        operatorId,
+        action: "create_client",
+        targetId: input.clientPhone,
+        details: `Cliente creado automáticamente desde orden ${orderId}`,
+      });
+    }
 
     await logActivity({
       operatorId,

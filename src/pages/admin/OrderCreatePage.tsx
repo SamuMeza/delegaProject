@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ClipboardPaste, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,10 +10,72 @@ import { OrderDetailsFields } from "@/components/OrderDetailsFields";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useDelegaDB";
 import { createOrder } from "@/lib/orders/service";
+import { parseWhatsApp } from "@/lib/orders/parseWhatsApp";
 import { defaultOrderDetails, SERVICE_TYPE_LABELS } from "@/lib/orders/ui";
 import type { OrderDetails, ServiceType } from "@/lib/types";
 
 const SERVICE_TYPES = Object.keys(SERVICE_TYPE_LABELS) as ServiceType[];
+
+function mapParamsToDetails(
+  serviceType: ServiceType,
+  params: Record<string, string>,
+  description: string,
+): OrderDetails {
+  const base = defaultOrderDetails(serviceType);
+
+  switch (serviceType) {
+    case "ensayo": {
+      const paginas = params.pageRange ?? params.paginas ?? base.paginas;
+      return {
+        ...base,
+        tema: params.topic ?? params.tema ?? description,
+        paginas: paginas as OrderDetails["paginas"],
+        normas: (params.citationStyle ?? params.normas ?? base.normas) as OrderDetails["normas"],
+      };
+    }
+    case "presentacion": {
+      const diapositivas = params.slideCount ?? params.diapositivas ?? base.diapositivas;
+      return {
+        ...base,
+        tema: params.topic ?? params.tema ?? description,
+        diapositivas: diapositivas as OrderDetails["diapositivas"],
+        estilo: (params.audienceLevel ?? params.estilo ?? base.estilo) as OrderDetails["estilo"],
+      };
+    }
+    case "investigacion": {
+      const fuentes = params.sourceCount ?? params.fuentesMinimas ?? base.fuentesMinimas;
+      return {
+        ...base,
+        tema: params.topic ?? params.tema ?? description,
+        fuentesMinimas: fuentes as OrderDetails["fuentesMinimas"],
+      };
+    }
+    case "formato": {
+      return {
+        ...base,
+        norma: (params.formatType ?? params.norma ?? base.norma) as OrderDetails["norma"],
+        tipoDocumento: (params.documentType ?? params.tipoDocumento ?? base.tipoDocumento) as OrderDetails["tipoDocumento"],
+      };
+    }
+    case "diseno": {
+      return {
+        ...base,
+        tipoDiseno: (params.designType ?? params.tipoDiseno ?? base.tipoDiseno) as OrderDetails["tipoDiseno"],
+        proposito: params.purpose ?? params.proposito ?? description,
+        colores: params.colorScheme ?? params.colores,
+      };
+    }
+    case "video": {
+      return {
+        ...base,
+        duracion: (params.duration ?? params.duracion ?? base.duracion) as OrderDetails["duracion"],
+        tipoVideo: (params.style ?? params.tipoVideo ?? base.tipoVideo) as OrderDetails["tipoVideo"],
+      };
+    }
+    default:
+      return base;
+  }
+}
 
 export function OrderCreatePage() {
   const navigate = useNavigate();
@@ -32,9 +94,31 @@ export function OrderCreatePage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const [importText, setImportText] = useState("");
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importSuccess, setImportSuccess] = useState(false);
+
   function handleServiceChange(s: ServiceType) {
     setServiceType(s);
     setDetails(defaultOrderDetails(s));
+  }
+
+  function handleImport() {
+    setImportError(null);
+    setImportSuccess(false);
+
+    const parsed = parseWhatsApp(importText);
+    if (!parsed) {
+      setImportError("No se pudo parsear el mensaje. Asegúrate de copiar el mensaje completo de WhatsApp.");
+      return;
+    }
+
+    setClientName(parsed.clientName);
+    setClientPhone(parsed.clientPhone);
+    setServiceType(parsed.serviceType);
+    setPrice(String(parsed.price));
+    setDetails(mapParamsToDetails(parsed.serviceType, parsed.parameters, parsed.description));
+    setImportSuccess(true);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -92,6 +176,40 @@ export function OrderCreatePage() {
           .
         </p>
       </div>
+
+      {/* WhatsApp Import */}
+      <details className="bg-surface-container rounded-xl p-4">
+        <summary className="cursor-pointer flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors">
+          <ClipboardPaste className="w-4 h-4" />
+          Importar mensaje de WhatsApp
+        </summary>
+        <div className="mt-3 space-y-3">
+          <Textarea
+            placeholder={"Pega aquí el mensaje completo de WhatsApp.\nEjemplo:\n👤 Cliente: María Pérez\n📞 Contacto: 584167050424\n🎓 Servicio: ensayo\n..."}
+            value={importText}
+            onChange={(e) => {
+              setImportText(e.target.value);
+              setImportError(null);
+              setImportSuccess(false);
+            }}
+            rows={6}
+          />
+          <div className="flex items-center gap-3">
+            <Button type="button" variant="outline" onClick={handleImport}>
+              Importar datos
+            </Button>
+            {importSuccess && (
+              <span className="flex items-center gap-1 text-sm text-secondary">
+                <CheckCircle className="w-4 h-4" />
+                Datos importados correctamente
+              </span>
+            )}
+            {importError && (
+              <span className="text-sm text-error">{importError}</span>
+            )}
+          </div>
+        </div>
+      </details>
 
       <form onSubmit={handleSubmit} className="space-y-5 bg-surface-container-lowest rounded-xl shadow-ambient p-6">
         <div className="grid gap-4 sm:grid-cols-2">
