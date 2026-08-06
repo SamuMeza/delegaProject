@@ -9,6 +9,14 @@ import { join } from "node:path";
 const ROOT = process.cwd();
 const SRC = join(ROOT, "src");
 
+// Inyectar BUN_PUBLIC_* del .env en el bundle del cliente via define
+const define: Record<string, string> = {};
+for (const [key, value] of Object.entries(process.env)) {
+  if (key.startsWith("BUN_PUBLIC_")) {
+    define[`process.env.${key}`] = JSON.stringify(value);
+  }
+}
+
 const CSS_CACHE: Record<string, string> = {};
 
 async function buildAndGetCSS(filePath: string): Promise<string | null> {
@@ -19,6 +27,7 @@ async function buildAndGetCSS(filePath: string): Promise<string | null> {
       plugins: [tailwind],
       target: "browser",
       sourcemap: "linked",
+      define,
     });
     for (const output of result.outputs) {
       const isCSS = output.type === "text/css" || output.path.endsWith(".css");
@@ -79,6 +88,7 @@ const server = Bun.serve({
         plugins: [tailwind],
         target: "browser",
         sourcemap: "linked",
+        define,
       });
       if (!result.success) {
         const msg = result.logs.map((l) => l.message).join("\n");

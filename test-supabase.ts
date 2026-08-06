@@ -2,9 +2,9 @@ import { supabase } from "./src/lib/supabase";
 
 async function testConnection() {
   console.log("Intentando conectar a Supabase...");
-  
-  const rawUrl = process.env.BUN_SUPABASE_URL || "";
-  const rawKey = process.env.BUN_SUPABASE_PUBLISHABLE_KEY || "";
+
+  const rawUrl = process.env.BUN_PUBLIC_SUPABASE_URL || "";
+  const rawKey = process.env.BUN_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "";
   const url = rawUrl.replace(/^"(.*)"$/, '$1');
   const key = rawKey.replace(/^"(.*)"$/, '$1');
 

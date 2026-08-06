@@ -5,6 +5,16 @@ import path from "node:path";
 const outdir = path.join(process.cwd(), "dist");
 await rm(outdir, { recursive: true, force: true });
 
+// Inyectar BUN_PUBLIC_* del .env en el bundle del cliente via define
+const define: Record<string, string> = {
+  "process.env.NODE_ENV": JSON.stringify("production"),
+};
+for (const [key, value] of Object.entries(process.env)) {
+  if (key.startsWith("BUN_PUBLIC_")) {
+    define[`process.env.${key}`] = JSON.stringify(value);
+  }
+}
+
 const result = await Bun.build({
   entrypoints: [path.join(process.cwd(), "src/frontend.tsx")],
   outdir,
@@ -13,9 +23,7 @@ const result = await Bun.build({
   target: "browser",
   sourcemap: "linked",
   splitting: true,
-  define: {
-    "process.env.NODE_ENV": JSON.stringify("production"),
-  },
+  define,
 });
 
 for (const output of result.outputs) {

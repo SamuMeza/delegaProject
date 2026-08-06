@@ -1,11 +1,20 @@
-import { db } from "@/lib/db/delegaDb";
+import { supabase } from "@/lib/supabase";
 
 export async function generateSubscriptionId(): Promise<string> {
-  return db.transaction("rw", db.config, async () => {
-    const config = await db.config.get("app");
-    if (!config) throw new Error("Config not found");
-    const next = config.subscriptionCounter + 1;
-    await db.config.update("app", { subscriptionCounter: next });
-    return `SUB-${String(next).padStart(3, "0")}`;
-  });
+  const { data: config } = await supabase
+    .from("config")
+    .select("subscription_counter")
+    .eq("id", "app")
+    .maybeSingle();
+
+  if (!config) throw new Error("Config not found");
+
+  const next = (config.subscription_counter ?? 0) + 1;
+
+  await supabase
+    .from("config")
+    .update({ subscription_counter: next })
+    .eq("id", "app");
+
+  return `SUB-${String(next).padStart(3, "0")}`;
 }

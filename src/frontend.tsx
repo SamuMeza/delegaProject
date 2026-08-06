@@ -8,7 +8,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
-import { seedDatabase } from "@/lib/db/seed";
 import "./index.css";
 
 const elem = document.getElementById("root")!;
@@ -18,10 +17,4 @@ const app = (
   </StrictMode>
 );
 
-// Recarga manual en dev (sin cliente HMR de Bun). El build de producción
-// (build.ts) no usa import.meta.hot, así que evitamos la dependencia aquí.
-seedDatabase()
-  .catch((err) => console.error("Error al inicializar la base de datos", err))
-  .finally(() => {
-    createRoot(elem).render(app);
-  });
+createRoot(elem).render(app);

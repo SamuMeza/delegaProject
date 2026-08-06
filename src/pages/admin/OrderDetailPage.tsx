@@ -28,7 +28,7 @@ export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { session } = useAuth();
-  const order = useOrder(id);
+  const { order, refetch } = useOrder(id);
   const operators = useOperators();
   const perms = useOrderPermissions(order, session);
 
@@ -59,6 +59,7 @@ export function OrderDetailPage() {
     setChangingStatus(true);
     try {
       await transitionOrder(order!.id, to, session.operatorId);
+      refetch();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al cambiar estado");
     } finally {
@@ -71,6 +72,7 @@ export function OrderDetailPage() {
     setAddingNote(true);
     try {
       await addNote(order!.id, noteText.trim(), session.operatorId);
+      refetch();
       setNoteText("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al agregar nota");

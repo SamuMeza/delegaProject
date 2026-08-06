@@ -1,6 +1,5 @@
-import { useState, useCallback } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/lib/db/delegaDb";
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
 import type { ActionType } from "@/lib/types";
 
 export interface ActivityLogFilters {
@@ -15,29 +14,55 @@ const PAGE_SIZE = 50;
 export function useActivityLog() {
   const [filters, setFilters] = useState<ActivityLogFilters>({});
   const [page, setPage] = useState(1);
+  const [allEntries, setAllEntries] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const entries = useLiveQuery(async () => {
-    let results = await db.activity_log.toArray();
+  useEffect(() => {
+    setLoading(true);
+
+    let query = supabase.from("activity_log").select("*");
 
     if (filters.operatorId) {
-      results = results.filter((e) => e.operatorId === filters.operatorId);
+      query = query.eq("operator_id", filters.operatorId);
     }
     if (filters.action) {
-      results = results.filter((e) => e.action === filters.action);
+      query = query.eq("action", filters.action);
     }
     if (filters.dateFrom) {
-      results = results.filter((e) => e.timestamp >= filters.dateFrom!);
+      query = query.gte("timestamp", filters.dateFrom);
     }
     if (filters.dateTo) {
-      results = results.filter((e) => e.timestamp <= filters.dateTo!);
+      query = query.lte("timestamp", filters.dateTo);
     }
 
-    return results.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    query
+      .order("timestamp", { ascending: false })
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Error useActivityLog:", error);
+          setAllEntries([]);
+        } else {
+          const mapped = (data || []).map((e: any) => ({
+            id: e.id,
+            operatorId: e.operator_id,
+            action: e.action,
+            targetType: e.target_type,
+            targetId: e.target_id,
+            details: e.details,
+            timestamp: e.timestamp,
+          }));
+          setAllEntries(mapped);
+        }
+        setLoading(false);
+      });
   }, [filters.operatorId, filters.action, filters.dateFrom, filters.dateTo]);
 
-  const total = entries?.length ?? 0;
+  const total = allEntries.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const paginatedEntries = entries?.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) ?? [];
+  const paginatedEntries = allEntries.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
 
   const updateFilters = useCallback((newFilters: ActivityLogFilters) => {
     setFilters(newFilters);
@@ -51,7 +76,7 @@ export function useActivityLog() {
 
   return {
     entries: paginatedEntries,
-    allEntries: entries,
+    allEntries,
     total,
     totalPages,
     page,
@@ -59,6 +84,6 @@ export function useActivityLog() {
     filters,
     updateFilters,
     resetFilters,
-    loading: entries === undefined,
+    loading,
   };
 }

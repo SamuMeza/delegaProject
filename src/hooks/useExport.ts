@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { db } from "@/lib/db/delegaDb";
+import { supabase } from "@/lib/supabase";
 
 interface ExportState {
   loading: boolean;
@@ -19,33 +19,31 @@ export function useExport() {
 
     try {
       const [
-        operators,
-        clients,
-        subscriptions,
-        orders,
-        attachments,
-        activityLog,
-        config,
+        operatorsRes,
+        clientsRes,
+        subscriptionsRes,
+        ordersRes,
+        attachmentsRes,
+        activityLogRes,
+        configRes,
       ] = await Promise.all([
-        db.operators.toArray(),
-        db.clients.toArray(),
-        db.subscriptions.toArray(),
-        db.orders.toArray(),
-        db.order_attachments.toArray(),
-        db.activity_log.toArray(),
-        db.config.toArray(),
+        supabase.from("operators").select("*"),
+        supabase.from("clients").select("*"),
+        supabase.from("subscriptions").select("*"),
+        supabase.from("orders").select("*"),
+        supabase.from("order_attachments").select("*"),
+        supabase.from("activity_log").select("*"),
+        supabase.from("config").select("*"),
       ]);
 
-      const attachmentMetadata = attachments.map(({ blob: _blob, ...rest }) => rest);
-
       const data = {
-        operators,
-        clients,
-        subscriptions,
-        orders,
-        orderAttachments: attachmentMetadata,
-        activityLog,
-        config,
+        operators: operatorsRes.data || [],
+        clients: clientsRes.data || [],
+        subscriptions: subscriptionsRes.data || [],
+        orders: ordersRes.data || [],
+        orderAttachments: (attachmentsRes.data || []).map(({ blob: _blob, ...rest }: any) => rest),
+        activityLog: activityLogRes.data || [],
+        config: configRes.data || [],
         exportedAt: new Date().toISOString(),
       };
 

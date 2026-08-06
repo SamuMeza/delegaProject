@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Client, Config, Operator, Order, OrderAttachment, OrderStatus, Subscription } from "@/lib/types";
 
@@ -176,8 +176,14 @@ export function useOrders(filter?: {
   return data;
 }
 
-export function useOrder(id: string | undefined): Order | undefined {
+export function useOrder(id: string | undefined): {
+  order: Order | undefined;
+  refetch: () => void;
+} {
   const [data, setData] = useState<Order | undefined>(undefined);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const refetch = useCallback(() => setRefreshKey((k) => k + 1), []);
 
   useEffect(() => {
     if (!id) {
@@ -221,9 +227,9 @@ export function useOrder(id: string | undefined): Order | undefined {
           });
         }
       });
-  }, [id]);
+  }, [id, refreshKey]);
 
-  return data;
+  return { order: data, refetch };
 }
 
 export function useAttachments(orderId: string | undefined): OrderAttachment[] | undefined {

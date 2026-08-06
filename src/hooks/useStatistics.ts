@@ -1,6 +1,6 @@
-import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/lib/db/delegaDb";
-import type { Order, Subscription, OperatorStats, OrderStatus } from "@/lib/types";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import type { OrderStatus, OperatorStats } from "@/lib/types";
 
 export interface MonthlyStatistics {
   totalOrders: number;
@@ -20,62 +20,78 @@ function getCurrentMonth(): string {
 }
 
 export function useStatistics(): MonthlyStatistics | undefined {
-  return useLiveQuery(async () => {
+  const [stats, setStats] = useState<MonthlyStatistics | undefined>(undefined);
+
+  useEffect(() => {
     const currentMonth = getCurrentMonth();
-    const orders: Order[] = await db.orders.toArray();
-    const subscriptions: Subscription[] = await db.subscriptions.toArray();
 
-    const monthOrders = orders.filter((o) => o.createdAt.startsWith(currentMonth));
-
-    const totalOrders = monthOrders.length;
-    const completedOrders = monthOrders.filter((o) => o.status === "completada").length;
-    const pendingOrders = monthOrders.filter(
-      (o) => o.status !== "completada" && o.status !== "cancelada",
-    ).length;
-    const cancelledOrders = monthOrders.filter((o) => o.status === "cancelada").length;
-
-    const totalRevenue = monthOrders.reduce((sum, o) => sum + (o.price || 0), 0);
-
-    const byOperator: Record<string, OperatorStats> = {};
-    for (const order of monthOrders) {
-      if (!byOperator[order.operatorId]) {
-        byOperator[order.operatorId] = { orders: 0, revenue: 0 };
+    Promise.all([
+      supabase.from("orders").select("*"),
+      supabase.from("subscriptions").select("*")
+    ]).then(([ordersRes, subsRes]) => {
+      if (ordersRes.error || subsRes.error) {
+        console.error("Error useStatistics:", ordersRes.error || subsRes.error);
+        return;
       }
-      byOperator[order.operatorId].orders++;
-      byOperator[order.operatorId].revenue += order.price || 0;
-    }
 
-    const byStatus: Record<OrderStatus, number> = {
-      nueva: 0,
-      pendiente_pago: 0,
-      en_progreso: 0,
-      revision: 0,
-      pendiente_final: 0,
-      completada: 0,
-      cancelada: 0,
-    };
-    for (const order of monthOrders) {
-      byStatus[order.status]++;
-    }
+      const orders = ordersRes.data || [];
+      const subscriptions = subsRes.data || [];
 
-    const activeSubscriptions = subscriptions.filter(
-      (s) => s.status === "activa" && s.endDate >= currentMonth,
-    ).length;
+      const monthOrders = orders.filter((o: any) => o.created_at && o.created_at.startsWith(currentMonth));
 
-    const subscriptionRevenue = subscriptions
-      .filter((s) => s.status === "activa" && s.startDate.startsWith(currentMonth))
-      .reduce((sum, s) => sum + s.price, 0);
+      const totalOrders = monthOrders.length;
+      const completedOrders = monthOrders.filter((o: any) => o.status === "completada").length;
+      const pendingOrders = monthOrders.filter(
+        (o: any) => o.status !== "completada" && o.status !== "cancelada"
+      ).length;
+      const cancelledOrders = monthOrders.filter((o: any) => o.status === "cancelada").length;
 
-    return {
-      totalOrders,
-      completedOrders,
-      pendingOrders,
-      cancelledOrders,
-      totalRevenue,
-      byOperator,
-      activeSubscriptions,
-      subscriptionRevenue,
-      byStatus,
-    };
+      const totalRevenue = monthOrders.reduce((sum: number, o: any) => sum + (Number(o.price) || 0), 0);
+
+      const byOperator: Record<string, OperatorStats> = {};
+      for (const order of monthOrders) {
+        const opId = order.operator_id;
+        if (!byOperator[opId]) {
+          byOperator[opId] = { orders: 0, revenue: 0 };
+        }
+        byOperator[opId].orders++;
+        byOperator[opId].revenue += Number(order.price) || 0;
+      }
+
+      const byStatus: Record<OrderStatus, number> = {
+        nueva: 0,
+        pendiente_pago: 0,
+        en_progreso: 0,
+        revision: 0,
+        pendiente_final: 0,
+        completada: 0,
+        cancelada: 0,
+      };
+      for (const order of monthOrders) {
+        byStatus[order.status as OrderStatus]++;
+      }
+
+      const activeSubscriptions = subscriptions.filter(
+        (s: any) => s.status === "activa" && s.end_date >= currentMonth
+      ).length;
+
+      const subscriptionRevenue = subscriptions
+        .filter((s: any) => s.status === "activa" && s.start_date.startsWith(currentMonth))
+        .reduce((sum: number, s: any) => sum + Number(s.price), 0);
+
+      setStats({
+        totalOrders,
+        completedOrders,
+        pendingOrders,
+        cancelledOrders,
+        totalRevenue,
+        byOperator,
+        activeSubscriptions,
+        subscriptionRevenue,
+        byStatus,
+      });
+    });
   }, []);
+
+  return stats;
 }

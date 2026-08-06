@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Pencil, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,8 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useClient, useClientSubscriptions } from "@/hooks/useDatabase";
-
-import { db } from "@/lib/db/delegaDb";
+import { supabase } from "@/lib/supabase";
 import { generateSubscriptionId } from "@/lib/id-gen";
 import type { SubscriptionType } from "@/lib/types";
 
@@ -43,21 +42,24 @@ export function ClientDetailPage() {
 
   async function handleSave() {
     if (!name.trim()) return;
-    await db.clients.put({
-      ...client,
-      name: name.trim(),
-      email: email.trim() || undefined,
-      notes: notes.trim() || undefined,
-    });
-    await db.activity_log.add({
+    await supabase
+      .from("clients")
+      .update({
+        name: name.trim(),
+        email: email.trim() || null,
+        notes: notes.trim() || null,
+      })
+      .eq("phone", client.phone);
+    await supabase.from("activity_log").insert({
       id: `LOG-${Date.now()}`,
-      operatorId: "operator",
+      operator_id: "operator",
       action: "update_client",
-      targetId: client.phone,
+      target_id: client.phone,
       details: `Cliente ${name.trim()} actualizado`,
       timestamp: new Date().toISOString(),
     });
     setEditing(false);
+    window.location.reload();
   }
 
   async function handleDeactivate() {
@@ -67,25 +69,35 @@ export function ClientDetailPage() {
     }
     const confirmed = window.confirm("¿Desactivar este cliente? No se eliminarán sus órdenes ni suscripciones.");
     if (!confirmed) return;
-    await db.clients.update(client.phone, { name: `[desactivado] ${client.name}` });
+    await supabase
+      .from("clients")
+      .update({ name: `[desactivado] ${client.name}` })
+      .eq("phone", client.phone);
     navigate("/admin/clientes");
   }
 
   async function handleCancelSubscription(subId: string) {
     const confirmed = window.confirm("¿Cancelar esta suscripción?");
     if (!confirmed) return;
-    await db.subscriptions.update(subId, { status: "cancelada" });
+    await supabase
+      .from("subscriptions")
+      .update({ status: "cancelada" })
+      .eq("id", subId);
     if (client.subscription) {
-      await db.clients.update(client.phone, { subscription: null });
+      await supabase
+        .from("clients")
+        .update({ subscription: null })
+        .eq("phone", client.phone);
     }
-    await db.activity_log.add({
+    await supabase.from("activity_log").insert({
       id: `LOG-${Date.now()}`,
-      operatorId: "operator",
+      operator_id: "operator",
       action: "cancel_subscription",
-      targetId: subId,
+      target_id: subId,
       details: `Suscripción ${subId} cancelada`,
       timestamp: new Date().toISOString(),
     });
+    window.location.reload();
   }
 
   const activeSub = subscriptions?.find((s) => s.status === "activa");
@@ -105,24 +117,35 @@ export function ClientDetailPage() {
     endDate.setMonth(endDate.getMonth() + 3);
     const endStr = endDate.toISOString().split("T")[0];
 
-    const config = await db.config.get("app");
-    const nextCounter = (config?.subscriptionCounter ?? 0) + 1;
+    const { data: config } = await supabase
+      .from("config")
+      .select("subscription_counter")
+      .eq("id", "app")
+      .maybeSingle();
+
+    const nextCounter = (config?.subscription_counter ?? 0) + 1;
     const newId = `SUB-${String(nextCounter).padStart(3, "0")}`;
 
-    await db.transaction("rw", db.subscriptions, db.clients, db.config, async () => {
-      await db.subscriptions.update(subId, { status: "reemplazada" });
-      await db.subscriptions.add({
-        id: newId,
-        clientPhone: client.phone,
-        type: sub.type,
-        startDate,
-        endDate: endStr,
-        price: sub.price,
-        status: "activa",
-        monthlyQuota: sub.monthlyQuota,
-        usedPerMonth: {},
-      });
-      await db.clients.update(client.phone, {
+    await supabase
+      .from("subscriptions")
+      .update({ status: "reemplazada" })
+      .eq("id", subId);
+
+    await supabase.from("subscriptions").insert({
+      id: newId,
+      client_phone: client.phone,
+      type: sub.type,
+      start_date: startDate,
+      end_date: endStr,
+      price: sub.price,
+      status: "activa",
+      monthly_quota: sub.monthlyQuota,
+      used_per_month: {},
+    });
+
+    await supabase
+      .from("clients")
+      .update({
         subscription: {
           type: sub.type,
           startDate,
@@ -132,17 +155,23 @@ export function ClientDetailPage() {
           monthlyQuota: sub.monthlyQuota,
           usedPerMonth: {},
         },
-      });
-      await db.config.update("app", { subscriptionCounter: nextCounter });
-    });
-    await db.activity_log.add({
+      })
+      .eq("phone", client.phone);
+
+    await supabase
+      .from("config")
+      .update({ subscription_counter: nextCounter })
+      .eq("id", "app");
+
+    await supabase.from("activity_log").insert({
       id: `LOG-${Date.now()}`,
-      operatorId: "operator",
+      operator_id: "operator",
       action: "renew_subscription",
-      targetId: newId,
+      target_id: newId,
       details: `Suscripción ${newId} renovada hasta ${endStr}`,
       timestamp: new Date().toISOString(),
     });
+    window.location.reload();
   }
 
   async function handleCreateSubscription() {
@@ -153,23 +182,29 @@ export function ClientDetailPage() {
 
     const newId = await generateSubscriptionId();
 
-    await db.transaction("rw", db.subscriptions, db.clients, db.config, async () => {
-      const existingActive = subscriptions?.find((s) => s.status === "activa");
-      if (existingActive) {
-        await db.subscriptions.update(existingActive.id, { status: "reemplazada" });
-      }
-      await db.subscriptions.add({
-        id: newId,
-        clientPhone: client.phone,
-        type: subType,
-        startDate,
-        endDate: endStr,
-        price: subPrice,
-        status: "activa",
-        monthlyQuota: subQuota,
-        usedPerMonth: {},
-      });
-      await db.clients.update(client.phone, {
+    const existingActive = subscriptions?.find((s) => s.status === "activa");
+    if (existingActive) {
+      await supabase
+        .from("subscriptions")
+        .update({ status: "reemplazada" })
+        .eq("id", existingActive.id);
+    }
+
+    await supabase.from("subscriptions").insert({
+      id: newId,
+      client_phone: client.phone,
+      type: subType,
+      start_date: startDate,
+      end_date: endStr,
+      price: subPrice,
+      status: "activa",
+      monthly_quota: subQuota,
+      used_per_month: {},
+    });
+
+    await supabase
+      .from("clients")
+      .update({
         subscription: {
           type: subType,
           startDate,
@@ -179,18 +214,20 @@ export function ClientDetailPage() {
           monthlyQuota: subQuota,
           usedPerMonth: {},
         },
-      });
-    });
-    await db.activity_log.add({
+      })
+      .eq("phone", client.phone);
+
+    await supabase.from("activity_log").insert({
       id: `LOG-${Date.now()}`,
-      operatorId: "operator",
+      operator_id: "operator",
       action: "create_subscription",
-      targetId: newId,
+      target_id: newId,
       details: `Suscripción ${newId} creada para ${client.name}`,
       timestamp: new Date().toISOString(),
     });
     setShowCreateSub(false);
     setSubStartDate(new Date().toISOString().split("T")[0]);
+    window.location.reload();
   }
 
   return (
@@ -390,23 +427,20 @@ export function ClientDetailPage() {
 }
 
 function OrderHistory({ clientPhone }: { clientPhone: string }) {
-  const [orders, setOrders] = useState<Array<{ id: string; serviceType: string; status: string; price: number; createdAt: string }>>([]);
+  const [orders, setOrders] = useState<Array<{ id: string; service_type: string; status: string; price: number; created_at: string }>>([]);
   const [loaded, setLoaded] = useState(false);
 
-  useState(() => {
-    db.orders
-      .where("clientPhone")
-      .equals(clientPhone)
-      .toArray()
-      .then((result) => {
-        setOrders(
-          result
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-            .map((o) => ({ id: o.id, serviceType: o.serviceType, status: o.status, price: o.price, createdAt: o.createdAt })),
-        );
+  useEffect(() => {
+    supabase
+      .from("orders")
+      .select("id, service_type, status, price, created_at")
+      .eq("client_phone", clientPhone)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        setOrders(data || []);
         setLoaded(true);
       });
-  });
+  }, [clientPhone]);
 
   if (!loaded) return <p className="text-sm text-on-surface-variant">Cargando…</p>;
 
@@ -430,10 +464,10 @@ function OrderHistory({ clientPhone }: { clientPhone: string }) {
           {orders.map((o) => (
             <tr key={o.id} className="border-b">
               <td className="py-1.5">{o.id}</td>
-              <td className="py-1.5">{o.serviceType}</td>
+              <td className="py-1.5">{o.service_type}</td>
               <td className="py-1.5">{o.status}</td>
               <td className="py-1.5">${o.price.toFixed(2)}</td>
-              <td className="py-1.5">{new Date(o.createdAt).toLocaleDateString()}</td>
+              <td className="py-1.5">{new Date(o.created_at).toLocaleDateString()}</td>
             </tr>
           ))}
         </tbody>

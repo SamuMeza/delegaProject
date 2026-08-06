@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { db } from "@/lib/db/delegaDb";
+import { supabase } from "@/lib/supabase";
 import { sha256 } from "@/lib/auth/hash";
 import {
   clearSession,
@@ -74,10 +74,12 @@ export function useAuth() {
         return false;
       }
 
-      const operator = await db.operators
-        .where("username")
-        .equals(username)
-        .first();
+      const { data: operator } = await supabase
+        .from("operators")
+        .select("*")
+        .eq("username", username)
+        .maybeSingle();
+
       if (!operator) {
         const attempts = getAttempts() + 1;
         setAttempts(attempts);
@@ -91,7 +93,7 @@ export function useAuth() {
       }
 
       const hash = await sha256(password);
-      if (hash !== operator.passwordHash) {
+      if (hash !== operator.password_hash) {
         const attempts = getAttempts() + 1;
         setAttempts(attempts);
         const left = Math.max(0, MAX_LOGIN_ATTEMPTS - attempts);
@@ -106,15 +108,20 @@ export function useAuth() {
       clearBlock();
       setRemainingAttempts(MAX_LOGIN_ATTEMPTS);
 
-      const config = await db.config.get("app");
-      const timeoutHours = config?.sessionTimeoutHours ?? DEFAULT_TIMEOUT_HOURS;
+      const { data: config } = await supabase
+        .from("config")
+        .select("session_timeout_hours")
+        .eq("id", "app")
+        .maybeSingle();
+
+      const timeoutHours = config?.session_timeout_hours ?? DEFAULT_TIMEOUT_HOURS;
       const loginAt = Date.now();
       const expiresAt = loginAt + timeoutHours * 3600 * 1000;
 
       const next: Session = {
         operatorId: operator.id,
         username: operator.username,
-        displayName: operator.displayName,
+        displayName: operator.display_name,
         loginAt,
         expiresAt,
       };

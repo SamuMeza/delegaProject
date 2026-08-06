@@ -1,5 +1,4 @@
-import { useLiveQuery } from "dexie-react-hooks";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Plus, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useClients, useSubscriptions } from "@/hooks/useDatabase";
-
-import { db } from "@/lib/db/delegaDb";
+import { supabase } from "@/lib/supabase";
 import type { Client } from "@/lib/types";
 
 function getCurrentMonthKey(): string {
@@ -24,24 +22,32 @@ export function ClientsListPage() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [notes, setNotes] = useState("");
+  const [allOrders, setAllOrders] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("orders")
+      .select("client_phone, created_at")
+      .then(({ data }) => setAllOrders(data || []));
+  }, []);
 
   async function handleCreate() {
     if (!name.trim() || !phone.trim()) return;
-    await db.clients.put({
+    await supabase.from("clients").upsert({
       phone: phone.trim(),
       name: name.trim(),
-      email: email.trim() || undefined,
-      notes: notes.trim() || undefined,
-      totalOrders: 0,
-      totalSpent: 0,
+      email: email.trim() || null,
+      notes: notes.trim() || null,
+      total_orders: 0,
+      total_spent: 0,
       subscription: null,
       history: [],
     });
-    await db.activity_log.add({
+    await supabase.from("activity_log").insert({
       id: `LOG-${Date.now()}`,
-      operatorId: "operator",
+      operator_id: "operator",
       action: "create_client",
-      targetId: phone.trim(),
+      target_id: phone.trim(),
       details: `Cliente ${name.trim()} creado`,
       timestamp: new Date().toISOString(),
     });
@@ -50,16 +56,16 @@ export function ClientsListPage() {
     setEmail("");
     setNotes("");
     setShowCreate(false);
+    window.location.reload();
   }
 
   const activeSubs = subscriptions?.filter((s) => s.status === "activa") ?? [];
 
-  const allOrders = useLiveQuery(() => db.orders.toArray(), []) ?? [];
   const lastContactMap = new Map<string, string>();
   for (const order of allOrders) {
-    const existing = lastContactMap.get(order.clientPhone);
-    if (!existing || order.createdAt > existing) {
-      lastContactMap.set(order.clientPhone, order.createdAt);
+    const existing = lastContactMap.get(order.client_phone);
+    if (!existing || order.created_at > existing) {
+      lastContactMap.set(order.client_phone, order.created_at);
     }
   }
 
@@ -73,8 +79,8 @@ export function ClientsListPage() {
   const currentMonth = getCurrentMonthKey();
   const ordersThisMonthByPhone = new Map<string, number>();
   for (const order of allOrders) {
-    if (order.createdAt.startsWith(currentMonth)) {
-      ordersThisMonthByPhone.set(order.clientPhone, (ordersThisMonthByPhone.get(order.clientPhone) ?? 0) + 1);
+    if (order.created_at.startsWith(currentMonth)) {
+      ordersThisMonthByPhone.set(order.client_phone, (ordersThisMonthByPhone.get(order.client_phone) ?? 0) + 1);
     }
   }
 

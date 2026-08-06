@@ -1,11 +1,11 @@
-import { useMemo } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
+import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AlertTriangle, ScrollText, BarChart3, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useConfig } from "@/hooks/useDatabase";
 import { useOrders } from "@/hooks/useDatabase";
+import { supabase } from "@/lib/supabase";
 
 import {
   ORDER_STATUS_LABELS,
@@ -18,7 +18,6 @@ import {
   isDueTomorrow,
   formatDueDate,
 } from "@/lib/orders/ui";
-import { db } from "@/lib/db/delegaDb";
 
 function daysUntil(dateStr: string): number {
   return Math.ceil((new Date(dateStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -65,33 +64,41 @@ export function DashboardPage() {
     }, {} as Record<string, number>);
   }, [monthlyOrders]);
 
-  const renewals = useLiveQuery(
-    () =>
-      db.transaction("r", db.subscriptions, db.clients, async () => {
-        const subs = await db.subscriptions
-          .where("status")
-          .equals("activa")
-          .toArray();
+  const [renewals, setRenewals] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("status", "activa")
+      .then(({ data: subs }) => {
+        if (!subs) return setRenewals([]);
         const nearEnd = subs
-          .filter((s) => {
-            const d = daysUntil(s.endDate);
+          .filter((s: any) => {
+            const d = daysUntil(s.end_date);
             return d >= 0 && d <= 15;
           })
-          .sort((a, b) => daysUntil(a.endDate) - daysUntil(b.endDate));
-        const phones = [...new Set(nearEnd.map((s) => s.clientPhone))];
-        const clients = await db.clients.bulkGet(phones);
-        const nameMap = new Map<string, string>();
-        for (const c of clients) {
-          if (c) nameMap.set(c.phone, c.name);
-        }
-        return nearEnd.map((s) => ({
-          ...s,
-          clientName: nameMap.get(s.clientPhone) ?? s.clientPhone,
-        }));
-      }),
-    [],
-    [],
-  );
+          .sort((a: any, b: any) => daysUntil(a.end_date) - daysUntil(b.end_date));
+        const phones = [...new Set(nearEnd.map((s: any) => s.client_phone))];
+        if (phones.length === 0) return setRenewals([]);
+        supabase
+          .from("clients")
+          .select("phone, name")
+          .in("phone", phones)
+          .then(({ data: clients }) => {
+            const nameMap = new Map<string, string>();
+            for (const c of clients || []) nameMap.set(c.phone, c.name);
+            setRenewals(
+              nearEnd.map((s: any) => ({
+                id: s.id,
+                clientPhone: s.client_phone,
+                endDate: s.end_date,
+                clientName: nameMap.get(s.client_phone) ?? s.client_phone,
+              }))
+            );
+          });
+      });
+  }, []);
 
   const urgentOrders = useMemo(() => {
     return orders?.filter((o) => isDueToday(o) || isDueTomorrow(o) || isOverdue(o)) ?? [];

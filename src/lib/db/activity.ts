@@ -1,4 +1,4 @@
-import { db } from "@/lib/db/delegaDb";
+import { supabase } from "@/lib/supabase";
 import type { ActionType } from "@/lib/types";
 
 // Registra una entrada en activity_log (research R10, spec §FR todas).
@@ -10,12 +10,16 @@ export async function logActivity(params: {
   targetId: string;
   details: string;
 }): Promise<void> {
-  await db.activity_log.add({
+  const { error } = await supabase.from("activity_log").insert({
     id: crypto.randomUUID(),
-    operatorId: params.operatorId,
+    operator_id: params.operatorId,
     action: params.action,
-    targetId: params.targetId,
+    target_id: params.targetId,
     details: params.details.slice(0, 200),
     timestamp: new Date().toISOString(),
   });
+
+  if (error) {
+    console.error("Error logActivity:", error);
+  }
 }
