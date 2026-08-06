@@ -1,5 +1,5 @@
 import { LandingLayout } from "@/components/landing/LandingLayout";
-import { useConfig } from "@/hooks/useDelegaDB";
+import { useConfig } from "@/hooks/useDatabase";
 
 export function ContactPage() {
   const config = useConfig();

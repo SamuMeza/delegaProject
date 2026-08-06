@@ -4,7 +4,8 @@ import { Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { useOperators, useOrders } from "@/hooks/useDelegaDB";
+import { useOperators, useOrders } from "@/hooks/useDatabase";
+
 import { useOrderPermissions } from "@/lib/orders/permissions";
 import {
   ORDER_STATUS_LABELS,

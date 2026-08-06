@@ -4,8 +4,9 @@ import { Link } from "react-router-dom";
 import { AlertTriangle, ScrollText, BarChart3, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useConfig } from "@/hooks/useDelegaDB";
-import { useOrders } from "@/hooks/useDelegaDB";
+import { useConfig } from "@/hooks/useDatabase";
+import { useOrders } from "@/hooks/useDatabase";
+
 import {
   ORDER_STATUS_LABELS,
   ORDER_STATUS_CLASSES,

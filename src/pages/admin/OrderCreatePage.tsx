@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { OrderDetailsFields } from "@/components/OrderDetailsFields";
 import { useAuth } from "@/hooks/useAuth";
-import { useConfig } from "@/hooks/useDelegaDB";
+import { useConfig } from "@/hooks/useDatabase";
+
 import { createOrder } from "@/lib/orders/service";
 import { parseWhatsApp } from "@/lib/orders/parseWhatsApp";
 import { defaultOrderDetails, SERVICE_TYPE_LABELS } from "@/lib/orders/ui";

@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { useClient, useClientSubscriptions } from "@/hooks/useDelegaDB";
+import { useClient, useClientSubscriptions } from "@/hooks/useDatabase";
+
 import { db } from "@/lib/db/delegaDb";
 import { generateSubscriptionId } from "@/lib/id-gen";
 import type { SubscriptionType } from "@/lib/types";
