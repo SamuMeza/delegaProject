@@ -27,6 +27,16 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .cache
 *.tsbuildinfo
 
+# playwright test artifacts
+test-results/
+
+# speckit tool metadata
+skills-lock.json
+
+# opencode tool files
+.opencode/node_modules/
+.opencode/package-lock.json
+
 # IntelliJ based IDEs
 .idea
 

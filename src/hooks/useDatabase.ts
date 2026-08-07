@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Client, Config, Operator, Order, OrderAttachment, OrderStatus, Subscription } from "@/lib/types";
 
-// Hook que reescribe la misma interfaz reactiva de useDelegaDB pero sobre Supabase
 export function useOperators(): Operator[] | undefined {
   const [data, setData] = useState<Operator[] | undefined>(undefined);
 
@@ -267,8 +266,11 @@ export function useAttachments(orderId: string | undefined): OrderAttachment[] |
   return data;
 }
 
-export function useClients(): Client[] | undefined {
+export function useClients(): { data: Client[] | undefined; refetch: () => void } {
   const [data, setData] = useState<Client[] | undefined>(undefined);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const refetch = useCallback(() => setRefreshKey((k) => k + 1), []);
 
   useEffect(() => {
     supabase
@@ -292,13 +294,16 @@ export function useClients(): Client[] | undefined {
           setData(mapped);
         }
       });
-  }, []);
+  }, [refreshKey]);
 
-  return data;
+  return { data, refetch };
 }
 
-export function useClient(phone: string | undefined): Client | undefined {
+export function useClient(phone: string | undefined): { data: Client | undefined; refetch: () => void } {
   const [data, setData] = useState<Client | undefined>(undefined);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const refetch = useCallback(() => setRefreshKey((k) => k + 1), []);
 
   useEffect(() => {
     if (!phone) {
@@ -329,9 +334,9 @@ export function useClient(phone: string | undefined): Client | undefined {
           });
         }
       });
-  }, [phone]);
+  }, [phone, refreshKey]);
 
-  return data;
+  return { data, refetch };
 }
 
 export function useSubscriptions(): Subscription[] | undefined {
@@ -365,8 +370,11 @@ export function useSubscriptions(): Subscription[] | undefined {
   return data;
 }
 
-export function useClientSubscriptions(phone: string | undefined): Subscription[] | undefined {
+export function useClientSubscriptions(phone: string | undefined): { data: Subscription[] | undefined; refetch: () => void } {
   const [data, setData] = useState<Subscription[] | undefined>(undefined);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const refetch = useCallback(() => setRefreshKey((k) => k + 1), []);
 
   useEffect(() => {
     if (!phone) {
@@ -396,9 +404,9 @@ export function useClientSubscriptions(phone: string | undefined): Subscription[
           setData(mapped);
         }
       });
-  }, [phone]);
+  }, [phone, refreshKey]);
 
-  return data;
+  return { data, refetch };
 }
 
 export async function upsertOperator(op: Operator): Promise<void> {

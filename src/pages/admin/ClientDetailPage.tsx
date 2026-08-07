@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useClient, useClientSubscriptions } from "@/hooks/useDatabase";
+import { useAuth } from "@/hooks/useAuth";
+import { logActivity } from "@/lib/db/activity";
 import { supabase } from "@/lib/supabase";
 import { generateSubscriptionId } from "@/lib/id-gen";
 import type { SubscriptionType } from "@/lib/types";
@@ -14,8 +16,9 @@ import type { SubscriptionType } from "@/lib/types";
 export function ClientDetailPage() {
   const { phone } = useParams<{ phone: string }>();
   const navigate = useNavigate();
-  const client = useClient(phone);
-  const subscriptions = useClientSubscriptions(phone);
+  const { session } = useAuth();
+  const { data: client, refetch: refetchClient } = useClient(phone);
+  const { data: subscriptions, refetch: refetchSubs } = useClientSubscriptions(phone);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -42,24 +45,30 @@ export function ClientDetailPage() {
 
   async function handleSave() {
     if (!name.trim()) return;
-    await supabase
-      .from("clients")
-      .update({
-        name: name.trim(),
-        email: email.trim() || null,
-        notes: notes.trim() || null,
-      })
-      .eq("phone", client.phone);
-    await supabase.from("activity_log").insert({
-      id: `LOG-${Date.now()}`,
-      operator_id: "operator",
-      action: "update_client",
-      target_id: client.phone,
-      details: `Cliente ${name.trim()} actualizado`,
-      timestamp: new Date().toISOString(),
-    });
-    setEditing(false);
-    window.location.reload();
+    try {
+      const { error } = await supabase
+        .from("clients")
+        .update({
+          name: name.trim(),
+          email: email.trim() || null,
+          notes: notes.trim() || null,
+        })
+        .eq("phone", client.phone);
+      if (error) {
+        console.error("Error updating client:", error);
+        return;
+      }
+      await logActivity({
+        operatorId: session.operatorId,
+        action: "update_client",
+        targetId: client.phone,
+        details: `Cliente ${name.trim()} actualizado`,
+      });
+      setEditing(false);
+      refetchClient();
+    } catch (e) {
+      console.error("Error en handleSave:", e);
+    }
   }
 
   async function handleDeactivate() {
@@ -89,15 +98,14 @@ export function ClientDetailPage() {
         .update({ subscription: null })
         .eq("phone", client.phone);
     }
-    await supabase.from("activity_log").insert({
-      id: `LOG-${Date.now()}`,
-      operator_id: "operator",
+    await logActivity({
+      operatorId: session.operatorId,
       action: "cancel_subscription",
-      target_id: subId,
+      targetId: subId,
       details: `Suscripción ${subId} cancelada`,
-      timestamp: new Date().toISOString(),
     });
-    window.location.reload();
+    refetchSubs();
+    refetchClient();
   }
 
   const activeSub = subscriptions?.find((s) => s.status === "activa");
@@ -163,15 +171,14 @@ export function ClientDetailPage() {
       .update({ subscription_counter: nextCounter })
       .eq("id", "app");
 
-    await supabase.from("activity_log").insert({
-      id: `LOG-${Date.now()}`,
-      operator_id: "operator",
+    await logActivity({
+      operatorId: session.operatorId,
       action: "renew_subscription",
-      target_id: newId,
+      targetId: newId,
       details: `Suscripción ${newId} renovada hasta ${endStr}`,
-      timestamp: new Date().toISOString(),
     });
-    window.location.reload();
+    refetchSubs();
+    refetchClient();
   }
 
   async function handleCreateSubscription() {
@@ -217,17 +224,16 @@ export function ClientDetailPage() {
       })
       .eq("phone", client.phone);
 
-    await supabase.from("activity_log").insert({
-      id: `LOG-${Date.now()}`,
-      operator_id: "operator",
+    await logActivity({
+      operatorId: session.operatorId,
       action: "create_subscription",
-      target_id: newId,
+      targetId: newId,
       details: `Suscripción ${newId} creada para ${client.name}`,
-      timestamp: new Date().toISOString(),
     });
     setShowCreateSub(false);
     setSubStartDate(new Date().toISOString().split("T")[0]);
-    window.location.reload();
+    refetchSubs();
+    refetchClient();
   }
 
   return (

@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useClients, useSubscriptions } from "@/hooks/useDatabase";
+import { useAuth } from "@/hooks/useAuth";
+import { logActivity } from "@/lib/db/activity";
 import { supabase } from "@/lib/supabase";
 import type { Client } from "@/lib/types";
 
@@ -15,8 +17,9 @@ function getCurrentMonthKey(): string {
 
 
 export function ClientsListPage() {
-  const clients = useClients();
+  const { data: clients, refetch: refetchClients } = useClients();
   const subscriptions = useSubscriptions();
+  const { session } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -43,20 +46,18 @@ export function ClientsListPage() {
       subscription: null,
       history: [],
     });
-    await supabase.from("activity_log").insert({
-      id: `LOG-${Date.now()}`,
-      operator_id: "operator",
+    await logActivity({
+      operatorId: session.operatorId,
       action: "create_client",
-      target_id: phone.trim(),
+      targetId: phone.trim(),
       details: `Cliente ${name.trim()} creado`,
-      timestamp: new Date().toISOString(),
     });
     setName("");
     setPhone("");
     setEmail("");
     setNotes("");
     setShowCreate(false);
-    window.location.reload();
+    refetchClients();
   }
 
   const activeSubs = subscriptions?.filter((s) => s.status === "activa") ?? [];

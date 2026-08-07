@@ -1,16 +1,15 @@
 <!--
 ## Sync Impact Report
 
-- Version change: 1.0.0 → 1.1.0
+- Version change: 1.1.0 → 2.0.0
 - Modified principles:
-  - I. No-Backend, Local-First Persistence — reworded to allow Dexie as an
-    IndexedDB wrapper (still no backend; IndexedDB remains the only store).
+  - I. No-Backend, Local-First Persistence → Supabase-Backed Persistence (redefined)
 - Added sections: none
 - Removed sections: none
 - Templates requiring updates:
   - ✅ .specify/templates/constitution-template.md (source of this fill)
   - ⚠ .specify/templates/plan-template.md — Constitution Check gate should
-    reference Delega principles (manual follow-up, deferred)
+    reference Delega principles (follow-up deferred)
   - ✅ .specify/templates/spec-template.md (aligned)
   - ✅ .specify/templates/tasks-template.md (aligned)
 - Follow-up TODOs:
@@ -24,16 +23,16 @@
 
 ## Core Principles
 
-### I. No-Backend, Local-First Persistence (NON-NEGOTIABLE)
+### I. Supabase-Backed Persistence (NON-NEGOTIABLE)
 
-All application data MUST be persisted exclusively in the browser via IndexedDB.
-The app MUST run entirely client-side with no server backend, no cloud database,
-and no fixed infrastructure cost. Deployment MUST use a static host (e.g., Vercel)
-serving only the React build. Any feature requiring a server MUST be rejected
-unless the constitution is amended first. IndexedDB is the only datastore; the
-Dexie library MAY be used as a thin wrapper over the native IndexedDB API to
-reduce boilerplate, but MUST NOT introduce a server, sync service, or remote
-database.
+All application data MUST be persisted in Supabase PostgreSQL. The frontend is a
+React SPA that communicates with Supabase via the official `@supabase/supabase-js`
+client library. IndexedDB is no longer used. Deployment uses a static host (Vercel)
+serving the React build, with Supabase as the serverless backend. Any feature
+requiring a custom server or external database OTHER than Supabase MUST be rejected
+unless the constitution is amended first. The Supabase project is the single source
+of truth for all data; Zustand MAY be used as an in-memory cache in the client
+but MUST NOT be treated as persistent storage.
 
 ### II. WhatsApp-First Intake & Human Coordination
 
@@ -71,12 +70,17 @@ speed up delivery MUST NOT be built. Complexity MUST be justified in the plan.
 
 ## Tech & Persistence Constraints
 
-- **Stack**: React (single-page web app), IndexedDB for all persistence, static
-  hosting only (no backend, no API server, no cloud DB).
-- **Offline-capable by design**: Because data lives in the browser, the app MUST
-  remain functional for the two operators on their own machines; cross-device
-  sync is out of scope unless explicitly added later via an amendment.
-- **No fixed costs**: Hosting and tooling MUST stay on free tiers.
+- **Stack**: React (single-page web app), Supabase (PostgreSQL, auth, real-time),
+  static hosting on Vercel. No custom backend server.
+- **Supabase as single source of truth**: All data lives in Supabase tables.
+  The client reads/writes directly via `@supabase/supabase-js`. No other
+  persistence layer (IndexedDB, localStorage for data, etc.) is permitted for
+  application data.
+- **In-memory caching**: Zustand MAY cache Supabase data in memory for
+  performance, but MUST NOT be treated as durable storage. On page reload,
+  data MUST be re-fetched from Supabase.
+- **No fixed costs**: Hosting and tooling MUST stay on free tiers (Vercel free,
+  Supabase free tier).
 
 ## Operating Model
 
@@ -106,4 +110,4 @@ cambios de features del producto NO alteran la versión de la constitución.
 Compliance is reviewed by the operators at each amendment and on any
 change that touches persistence, pricing, or the order lifecycle.
 
-**Version**: 1.1.0 | **Ratified**: 2026-07-19 (fecha de adopción) | **Last Amended**: 2026-07-19 (fecha del último cambio a la constitución; igual a Ratified en la versión inicial)
+**Version**: 2.0.0 | **Ratified**: 2026-07-19 (fecha de adopción) | **Last Amended**: 2026-08-06 (migración de IndexedDB a Supabase)

@@ -12,7 +12,7 @@ import type {
 
 // Capa de servicio de órdenes (contracts §C2, research R10).
 // La UI nunca toca `db` directo para órdenes; usa estos helpers.
-// Migrado de Dexie a Supabase — operaciones secuenciales (sin transacciones).
+// Operaciones secuenciales (sin transacciones).
 
 const ATTACHMENT_LIMIT_BYTES = 25 * 1024 * 1024; // ~25 MB (edge case spec)
 
