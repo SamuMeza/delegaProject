@@ -13,7 +13,7 @@ import { useConfig } from "@/hooks/useDatabase";
 import { createOrder } from "@/lib/orders/service";
 import { parseWhatsApp } from "@/lib/orders/parseWhatsApp";
 import { defaultOrderDetails, SERVICE_TYPE_LABELS } from "@/lib/orders/ui";
-import type { OrderDetails, ServiceType } from "@/lib/types";
+import type { OrderDetails, OrderDetailsTrabajosEscritos, OrderDetailsPresentacion, OrderDetailsDiseno, OrderDetailsVideo, ServiceType } from "@/lib/types";
 
 const SERVICE_TYPES = Object.keys(SERVICE_TYPE_LABELS) as ServiceType[];
 
@@ -22,59 +22,44 @@ function mapParamsToDetails(
   params: Record<string, string>,
   description: string,
 ): OrderDetails {
-  const base = defaultOrderDetails(serviceType);
-
   switch (serviceType) {
-    case "ensayo": {
-      const paginas = params.pageRange ?? params.paginas ?? base.paginas;
+    case "trabajos_escritos": {
+      const base = defaultOrderDetails("trabajos_escritos") as OrderDetailsTrabajosEscritos;
       return {
         ...base,
+        subtipo: (params.subtipo ?? base.subtipo) as OrderDetailsTrabajosEscritos["subtipo"],
         tema: params.topic ?? params.tema ?? description,
-        paginas: paginas as OrderDetails["paginas"],
-        normas: (params.citationStyle ?? params.normas ?? base.normas) as OrderDetails["normas"],
+        paginas: (params.pageRange ?? params.paginas ?? base.paginas) as OrderDetailsTrabajosEscritos["paginas"],
       };
     }
     case "presentacion": {
-      const diapositivas = params.slideCount ?? params.diapositivas ?? base.diapositivas;
+      const base = defaultOrderDetails("presentacion") as OrderDetailsPresentacion;
       return {
         ...base,
         tema: params.topic ?? params.tema ?? description,
-        diapositivas: diapositivas as OrderDetails["diapositivas"],
-        estilo: (params.audienceLevel ?? params.estilo ?? base.estilo) as OrderDetails["estilo"],
-      };
-    }
-    case "investigacion": {
-      const fuentes = params.sourceCount ?? params.fuentesMinimas ?? base.fuentesMinimas;
-      return {
-        ...base,
-        tema: params.topic ?? params.tema ?? description,
-        fuentesMinimas: fuentes as OrderDetails["fuentesMinimas"],
-      };
-    }
-    case "formato": {
-      return {
-        ...base,
-        norma: (params.formatType ?? params.norma ?? base.norma) as OrderDetails["norma"],
-        tipoDocumento: (params.documentType ?? params.tipoDocumento ?? base.tipoDocumento) as OrderDetails["tipoDocumento"],
+        diapositivas: (params.slideCount ?? params.diapositivas ?? base.diapositivas) as OrderDetailsPresentacion["diapositivas"],
+        estilo: (params.audienceLevel ?? params.estilo ?? base.estilo) as OrderDetailsPresentacion["estilo"],
       };
     }
     case "diseno": {
+      const base = defaultOrderDetails("diseno") as OrderDetailsDiseno;
       return {
         ...base,
-        tipoDiseno: (params.designType ?? params.tipoDiseno ?? base.tipoDiseno) as OrderDetails["tipoDiseno"],
+        tipoDiseno: (params.designType ?? params.tipoDiseno ?? base.tipoDiseno) as OrderDetailsDiseno["tipoDiseno"],
         proposito: params.purpose ?? params.proposito ?? description,
         colores: params.colorScheme ?? params.colores,
       };
     }
     case "video": {
+      const base = defaultOrderDetails("video") as OrderDetailsVideo;
       return {
         ...base,
-        duracion: (params.duration ?? params.duracion ?? base.duracion) as OrderDetails["duracion"],
-        tipoVideo: (params.style ?? params.tipoVideo ?? base.tipoVideo) as OrderDetails["tipoVideo"],
+        duracion: (params.duration ?? params.duracion ?? base.duracion) as OrderDetailsVideo["duracion"],
+        tipoVideo: (params.style ?? params.tipoVideo ?? base.tipoVideo) as OrderDetailsVideo["tipoVideo"],
       };
     }
     default:
-      return base;
+      return defaultOrderDetails(serviceType);
   }
 }
 
@@ -85,11 +70,11 @@ export function OrderCreatePage() {
 
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
-  const [serviceType, setServiceType] = useState<ServiceType>("ensayo");
-  const [details, setDetails] = useState<OrderDetails>(defaultOrderDetails("ensayo"));
+  const [serviceType, setServiceType] = useState<ServiceType>("trabajos_escritos");
+  const [details, setDetails] = useState<OrderDetails>(defaultOrderDetails("trabajos_escritos"));
   const [dueDate, setDueDate] = useState("");
   const [urgent, setUrgent] = useState(false);
-  const [price, setPrice] = useState("3");
+  const [price, setPrice] = useState("2");
   const [paidAmount, setPaidAmount] = useState("0");
   const [paymentRef, setPaymentRef] = useState("");
   const [error, setError] = useState<string | null>(null);

@@ -17,7 +17,7 @@ export function HomePage() {
               Tu apoyo académico de confianza. Delegar es el primer paso al éxito.
             </h1>
             <p className="text-body-lg text-on-surface-variant max-w-lg">
-              Ensayos, presentaciones, investigaciones y más — desde $3 por tarea.
+              Trabajos escritos, diseño gráfico, video y más — desde $2 por tarea.
               Envía tu solicitud por WhatsApp y recibe seguimiento sin necesidad de
               plataformas complicadas.
             </p>
@@ -37,12 +37,11 @@ export function HomePage() {
             </div>
           </div>
           <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden shadow-ambient-hover bg-surface-container">
-            <div className="w-full h-full flex items-center justify-center text-on-surface-variant">
-              <div className="text-center">
-                <div className="text-6xl mb-4">📚</div>
-                <p className="text-sm">Delega tu carga académica</p>
-              </div>
-            </div>
+            <img
+              src="/hero.jpg"
+              alt="Delega - Apoyo académico de confianza"
+              className="w-full h-full object-cover object-center"
+            />
             <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-secondary-container rounded-full opacity-50 blur-2xl"></div>
           </div>
         </div>
@@ -55,7 +54,7 @@ export function HomePage() {
         </h2>
         <div className="grid gap-6 md:grid-cols-3">
           {[
-            { step: "1", title: "Elige tu servicio", desc: "Selecciona el tipo de trabajo que necesitas (ensayo, presentación, diseño, etc.)" },
+            { step: "1", title: "Elige tu servicio", desc: "Selecciona el tipo de trabajo que necesitas (trabajos escritos, diseño, video, etc.)" },
             { step: "2", title: "Completa los detalles", desc: "Llena los campos específicos para tu tarea y recibe un precio al instante" },
             { step: "3", title: "Recibe por WhatsApp", desc: "Envía la solicitud con un solo clic y da seguimiento al progreso de tu orden" },
           ].map((item) => (
@@ -73,11 +72,11 @@ export function HomePage() {
       {/* Pricing summary */}
       <section className="w-full max-w-[1280px] mx-auto px-4 md:px-16 mb-16">
         <h2 className="mb-8 text-center font-display text-headline-md text-primary">
-          Precios desde $3
+          Precios desde $2
         </h2>
         <div className="grid gap-4 md:grid-cols-3">
           {[
-            { label: "Tareas individuales", range: "$3 – $15", desc: "Por tarea, según el tipo y la complejidad" },
+            { label: "Tareas individuales", range: "$2 – $15", desc: "Por tarea, según el tipo y la complejidad" },
             { label: "Suscripción trimestral", range: "proximamente", desc: "" }, //range: $25, desc: "Hasta 4 tareas por mes durante 3 meses"
             { label: "Sin sorpresas", range: "Precio fijo", desc: "Confirmamos el precio antes de empezar" },
           ].map((item) => (

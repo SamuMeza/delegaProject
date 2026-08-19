@@ -4,6 +4,7 @@ import { ServiceSelector } from "@/components/landing/ServiceSelector";
 import { DynamicFields } from "@/components/landing/DynamicFields";
 import { PriceEstimator } from "@/components/landing/PriceEstimator";
 import { WhatsAppGenerator, type WhatsAppMessageData } from "@/components/landing/WhatsAppGenerator";
+import { FileUpload } from "@/components/landing/FileUpload";
 import { getServiceConfig, type ServiceTypeConfig } from "@/lib/config/serviceTypes";
 import { generateTrackingUrl } from "@/lib/tracking";
 import { estimatePrice } from "@/lib/pricing";
@@ -23,6 +24,7 @@ interface FormState {
   clientContact: string;
   description: string;
   fieldValues: Record<string, string>;
+  files: File[];
 }
 
 const initialState: FormState = {
@@ -30,6 +32,7 @@ const initialState: FormState = {
   clientContact: "",
   description: "",
   fieldValues: {},
+  files: [],
 };
 
 function ProgressBar({ currentStep }: { currentStep: number }) {
@@ -151,12 +154,11 @@ function Step2({
           />
         </div>
 
-        {/* Upload zone (visual) */}
-        <div className="border-2 border-dashed border-border-subtle rounded-lg p-6 bg-surface-studio hover:bg-surface-container transition-colors cursor-pointer flex flex-col items-center gap-2 text-center">
-          <Send className="w-8 h-8 text-on-surface-variant" />
-          <p className="text-sm font-semibold text-on-surface">Subir archivos de referencia</p>
-          <p className="text-xs text-on-surface-variant">Máximo 10MB por archivo (PDF, DOCX)</p>
-        </div>
+        {/* Upload zone */}
+        <FileUpload
+          files={form.files}
+          onChange={(files) => setForm((p) => ({ ...p, files }))}
+        />
       </div>
     </div>
   );

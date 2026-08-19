@@ -4,17 +4,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type {
   OrderDetails,
-  OrderDetailsDiseno,
-  OrderDetailsEnsayo,
-  OrderDetailsFormato,
-  OrderDetailsInvestigacion,
+  OrderDetailsTrabajosEscritos,
   OrderDetailsPresentacion,
+  OrderDetailsDiseno,
   OrderDetailsVideo,
   ServiceType,
 } from "@/lib/types";
-
-// Formulario de detalles por tipo de servicio (manual §2.2.4 / §6.1).
-// Componente controlado: produce un OrderDetails tipado según serviceType.
 
 interface Props {
   serviceType: ServiceType;
@@ -48,10 +43,26 @@ export function OrderDetailsFields({ serviceType, value, onChange }: Props) {
     onChange({ ...value, ...patch } as OrderDetails);
 
   switch (serviceType) {
-    case "ensayo": {
-      const v = value as OrderDetailsEnsayo;
+    case "trabajos_escritos": {
+      const v = value as OrderDetailsTrabajosEscritos;
       return (
         <div className="space-y-3">
+          <div>
+            <Label htmlFor="d-subtipo">Tipo de trabajo</Label>
+            <Select value={v.subtipo ?? "ensayo"} onValueChange={(val) => set({ subtipo: val })}>
+              <SelectTrigger id="d-subtipo" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ensayo">Ensayo</SelectItem>
+                <SelectItem value="tesis">Tesis / Trabajo de grado</SelectItem>
+                <SelectItem value="monografia">Monografía</SelectItem>
+                <SelectItem value="informe">Informe</SelectItem>
+                <SelectItem value="articulo">Artículo</SelectItem>
+                <SelectItem value="formato">Formato / Normas APA</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div>
             <Label htmlFor="d-tema">Tema</Label>
             <Input id="d-tema" value={v.tema ?? ""} onChange={(e) => set({ tema: e.target.value })} />
@@ -63,27 +74,24 @@ export function OrderDetailsFields({ serviceType, value, onChange }: Props) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1-3">1-3</SelectItem>
-                <SelectItem value="4-7">4-7</SelectItem>
-                <SelectItem value="8+">8+</SelectItem>
+                <SelectItem value="1-3">1–3 páginas</SelectItem>
+                <SelectItem value="4-7">4–7 páginas</SelectItem>
+                <SelectItem value="8+">8+ páginas</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <Label htmlFor="d-norm">Normas</Label>
-            <Select value={v.normas ?? "ninguna"} onValueChange={(val) => set({ normas: val })}>
-              <SelectTrigger id="d-norm" className="w-full">
+            <Label htmlFor="d-guia">¿Tiene guía/instrucciones?</Label>
+            <Select value={v.tieneGuia ? "true" : "false"} onValueChange={(val) => set({ tieneGuia: val === "true" })}>
+              <SelectTrigger id="d-guia" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ninguna">Ninguna</SelectItem>
-                <SelectItem value="APA">APA</SelectItem>
-                <SelectItem value="ISO">ISO</SelectItem>
-                <SelectItem value="otra">Otra</SelectItem>
+                <SelectItem value="true">Sí</SelectItem>
+                <SelectItem value="false">No</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <Check label="Tiene guía" checked={v.tieneGuia ?? false} onChange={(b) => set({ tieneGuia: b })} />
           <div>
             <Label htmlFor="d-inst">Instrucciones especiales</Label>
             <Textarea id="d-inst" value={v.instruccionesEspeciales ?? ""} onChange={(e) => set({ instruccionesEspeciales: e.target.value })} />
@@ -151,97 +159,6 @@ export function OrderDetailsFields({ serviceType, value, onChange }: Props) {
         </div>
       );
     }
-    case "investigacion": {
-      const v = value as OrderDetailsInvestigacion;
-      return (
-        <div className="space-y-3">
-          <div>
-            <Label htmlFor="d-tema">Tema</Label>
-            <Input id="d-tema" value={v.tema ?? ""} onChange={(e) => set({ tema: e.target.value })} />
-          </div>
-          <div>
-            <Label htmlFor="d-prof">Profundidad</Label>
-            <Select value={v.profundidad ?? "media"} onValueChange={(val) => set({ profundidad: val })}>
-              <SelectTrigger id="d-prof" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="basica">Básica</SelectItem>
-                <SelectItem value="media">Media</SelectItem>
-                <SelectItem value="avanzada">Avanzada</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="d-fuen">Fuentes mínimas</Label>
-            <Select value={v.fuentesMinimas ?? "no-importa"} onValueChange={(val) => set({ fuentesMinimas: val })}>
-              <SelectTrigger id="d-fuen" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="no-importa">No importa</SelectItem>
-                <SelectItem value="3-5">3-5</SelectItem>
-                <SelectItem value="6-10">6-10</SelectItem>
-                <SelectItem value="mas-10">Más de 10</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="d-forment">Formato de entrega</Label>
-            <Select value={v.formatoEntrega ?? "resumen"} onValueChange={(val) => set({ formatoEntrega: val })}>
-              <SelectTrigger id="d-forment" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="resumen">Resumen</SelectItem>
-                <SelectItem value="fichas">Fichas</SelectItem>
-                <SelectItem value="estado-del-arte">Estado del arte</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Check label="Tiene guía" checked={v.tieneGuia ?? false} onChange={(b) => set({ tieneGuia: b })} />
-        </div>
-      );
-    }
-    case "formato": {
-      const v = value as OrderDetailsFormato;
-      return (
-        <div className="space-y-3">
-          <div>
-            <Label htmlFor="d-td">Tipo de documento</Label>
-            <Select value={v.tipoDocumento ?? "word"} onValueChange={(val) => set({ tipoDocumento: val })}>
-              <SelectTrigger id="d-td" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="word">Word</SelectItem>
-                <SelectItem value="pdf">PDF</SelectItem>
-                <SelectItem value="powerpoint">PowerPoint</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="d-norm">Norma</Label>
-            <Select value={v.norma ?? "APA"} onValueChange={(val) => set({ norma: val })}>
-              <SelectTrigger id="d-norm" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="APA">APA</SelectItem>
-                <SelectItem value="ISO">ISO</SelectItem>
-                <SelectItem value="otra">Otra</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Check label="Necesita índice" checked={v.necesitaIndice ?? false} onChange={(b) => set({ necesitaIndice: b })} />
-          <Check label="Necesita portada" checked={v.necesitaPortada ?? false} onChange={(b) => set({ necesitaPortada: b })} />
-          <div>
-            <Label htmlFor="d-not">Notas adicionales</Label>
-            <Textarea id="d-not" value={v.notasAdicionales ?? ""} onChange={(e) => set({ notasAdicionales: e.target.value })} />
-          </div>
-        </div>
-      );
-    }
     case "diseno": {
       const v = value as OrderDetailsDiseno;
       return (
@@ -256,6 +173,8 @@ export function OrderDetailsFields({ serviceType, value, onChange }: Props) {
                 <SelectItem value="flayer">Flayer</SelectItem>
                 <SelectItem value="infografia">Infografía</SelectItem>
                 <SelectItem value="portada">Portada</SelectItem>
+                <SelectItem value="flyers_animados">Flyers animados</SelectItem>
+                <SelectItem value="paquete_fotos">Paquete de fotos</SelectItem>
                 <SelectItem value="otro">Otro</SelectItem>
               </SelectContent>
             </Select>
