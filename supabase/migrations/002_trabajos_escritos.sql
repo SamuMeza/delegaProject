@@ -40,7 +40,7 @@ SET faqs = '[
     {"question": "¿Qué métodos de pago aceptan?", "answer": "Solo aceptamos Pago Móvil (transferencia bancaria venezolana). No aceptamos efectivo, PayPal ni otras formas de pago."},
     {"question": "¿Puedo cancelar mi solicitud?", "answer": "Puedes cancelar sin costo si el trabajo no ha sido iniciado. Si ya está en progreso, se aplica un cargo parcial según el avance."},
     {"question": "¿Cómo sé el estado de mi pedido?", "answer": "Recibes un token de seguimiento con tu solicitud. Puedes usarlo en la sección de rastreo de la página para ver el estado actual."},
-    {"question": "¿Los trabajos son originales?", "answer": "Sí, todos los trabajos son elaborados desde cero según tus indicaciones. Son de carácter académico y de referencia; no deben ser presentados como propios."
+    {"question": "¿Los trabajos son originales?", "answer": "Sí, todos los trabajos son elaborados desde cero según tus indicaciones. Son de carácter académico y de referencia, no deben ser presentados como propios."}
   ]'
 WHERE id = 'app';
 

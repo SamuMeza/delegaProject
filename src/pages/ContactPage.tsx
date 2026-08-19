@@ -44,7 +44,7 @@ const DEFAULT_FAQS = [
   {
     question: "¿Qué pasa si no estoy satisfecho?",
     answer: "Correcciones sin costo. En casos excepcionales, reembolso según circunstancias.",
-  },
+  }
 ];
 
 const HOW_IT_WORKS = [
@@ -217,7 +217,7 @@ export function ContactPage() {
         </section>
 
         {/* Disclaimers */}
-        {config?.disclaimers && config.disclaimers.length > 0 && (
+        {/* {config?.disclaimers && config.disclaimers.length > 0 && (
           <section>
             <div className="bg-surface-container-lowest rounded-xl shadow-ambient p-6 text-sm text-on-surface-variant">
               {config.disclaimers.map((d, i) => (
@@ -225,7 +225,7 @@ export function ContactPage() {
               ))}
             </div>
           </section>
-        )}
+        )} */}
       </div>
     </LandingLayout>
   );
