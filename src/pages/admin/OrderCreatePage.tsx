@@ -7,12 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { OrderDetailsFields } from "@/components/OrderDetailsFields";
+import { FileUpload } from "@/components/landing/FileUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useDatabase";
 
 import { createOrder } from "@/lib/orders/service";
 import { parseWhatsApp } from "@/lib/orders/parseWhatsApp";
 import { defaultOrderDetails, SERVICE_TYPE_LABELS } from "@/lib/orders/ui";
+import { uploadOrderFiles } from "@/lib/storage";
 import type { OrderDetails, OrderDetailsTrabajosEscritos, OrderDetailsPresentacion, OrderDetailsDiseno, OrderDetailsVideo, ServiceType } from "@/lib/types";
 
 const SERVICE_TYPES = Object.keys(SERVICE_TYPE_LABELS) as ServiceType[];
@@ -79,6 +81,8 @@ export function OrderCreatePage() {
   const [paymentRef, setPaymentRef] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
 
   const [importText, setImportText] = useState("");
   const [importError, setImportError] = useState<string | null>(null);
@@ -110,6 +114,7 @@ export function OrderCreatePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setUploadErrors([]);
     if (!clientName.trim() || !clientPhone.trim()) {
       setError("Nombre y teléfono del cliente son obligatorios.");
       return;
@@ -134,6 +139,15 @@ export function OrderCreatePage() {
         },
         session.operatorId,
       );
+
+      // Subir archivos si hay
+      if (files.length > 0) {
+        const { errors } = await uploadOrderFiles(id, files);
+        if (errors.length > 0) {
+          setUploadErrors(errors);
+        }
+      }
+
       navigate(`/admin/ordenes/${id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo crear la orden.");
@@ -229,6 +243,22 @@ export function OrderCreatePage() {
           <legend className="px-2 text-sm font-semibold text-on-surface">Detalles del servicio</legend>
           <OrderDetailsFields serviceType={serviceType} value={details} onChange={setDetails} />
         </fieldset>
+
+        <div>
+          <Label className="text-sm font-semibold text-on-surface uppercase tracking-wider">Archivos adjuntos</Label>
+          <p className="text-xs text-on-surface-variant mb-2">Sube archivos relacionados con la orden (PDF, DOCX). Máximo 5 archivos, 10MB cada uno.</p>
+          <FileUpload files={files} onChange={setFiles} />
+          {uploadErrors.length > 0 && (
+            <div className="mt-2 p-2 rounded-lg bg-error/10 border border-error/20">
+              <p className="text-xs font-semibold text-error mb-1">Error al subir archivos:</p>
+              <ul className="text-xs text-on-surface-variant list-disc list-inside">
+                {uploadErrors.map((err, i) => (
+                  <li key={i}>{err}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>

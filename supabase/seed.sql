@@ -12,16 +12,20 @@ VALUES (
   0,
   true,
   '{
-    "trabajos_escritos": "op_001",
+    "ensayo": "op_001",
     "presentacion": "op_001",
+    "investigacion": "op_001",
+    "formato": "op_001",
     "diseno": "op_002",
     "video": "op_002"
   }',
   '{
-    "trabajos_escritos": {"min": 2, "max": 5},
-    "presentacion": {"min": 4, "max": 6},
-    "diseno": {"min": 3, "max": 14},
-    "video": {"min": 8, "max": 15}
+    "ensayo": {"min": 3, "max": 15},
+    "presentacion": {"min": 3, "max": 15},
+    "investigacion": {"min": 3, "max": 15},
+    "formato": {"min": 3, "max": 15},
+    "diseno": {"min": 3, "max": 15},
+    "video": {"min": 3, "max": 15}
   }',
   '[
     {"question": "¿Cómo funciona el servicio?", "answer": "Seleccionas el tipo de trabajo, completas los detalles, envías la solicitud por WhatsApp y un operador te contacta."},
@@ -34,9 +38,8 @@ VALUES (
     "phone": "04141234567"
   }',
   '[
-    "Los servicios son de apoyo académico y referencia. No garantizamos calificaciones.",
-    "Precios en USD. Pago vía Pago Móvil. Tipo de cambio del día.",
-    "Delega se reserva el derecho de modificar o suspender servicios sin previo aviso."
+    "Los trabajos son de carácter académico y no deben ser presentados como propios.",
+    "Los precios están en USD y se cancelan en BS al tipo de cambio del día."
   ]',
   now(),
   now()
@@ -47,7 +50,7 @@ ON CONFLICT (id) DO NOTHING;
 -- Contraseña para ambos: "password" (SHA-256: 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8)
 INSERT INTO operators (id, username, display_name, password_hash, role, services, color, active, created_at)
 VALUES
-  ('op_001', 'op_001', 'Operador 1', '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', 'operator', ARRAY['trabajos_escritos','presentacion'], '#3b82f6', true, now()),
+  ('op_001', 'op_001', 'Operador 1', '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', 'operator', ARRAY['ensayo','presentacion','investigacion','formato'], '#3b82f6', true, now()),
   ('op_002', 'op_002', 'Operador 2', '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', 'operator', ARRAY['diseno','video'], '#10b981', true, now())
 ON CONFLICT (id) DO NOTHING;
 

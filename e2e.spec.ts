@@ -352,3 +352,81 @@ test.describe("Landing page", () => {
     expect(hasNav).toBeTruthy();
   });
 });
+
+test.describe("Contacto - FAQ", () => {
+  test("la página de contacto carga correctamente", async ({ page }) => {
+    await page.goto(`${BASE}/contacto`);
+    await page.waitForLoadState("networkidle");
+
+    const html = await page.content();
+    expect(html).toContain("Contacto");
+    expect(html).toContain("Preguntas frecuentes");
+  });
+
+  test("muestra las10 FAQs por defecto", async ({ page }) => {
+    await page.goto(`${BASE}/contacto`);
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(1000);
+
+    // Verificar que se muestran las10 FAQs
+    const faqItems = page.locator("details");
+    const count = await faqItems.count();
+    expect(count).toBe(10);
+  });
+
+  test("muestra el contador correcto de preguntas", async ({ page }) => {
+    await page.goto(`${BASE}/contacto`);
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(1000);
+
+    const html = await page.content();
+    expect(html).toContain("10 preguntas");
+  });
+
+  test("las FAQs tienen pregunta y respuesta", async ({ page }) => {
+    await page.goto(`${BASE}/contacto`);
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(1000);
+
+    // Verificar que al menos algunas FAQs están presentes
+    const html = await page.content();
+    expect(html).toContain("¿Qué es Delega");
+    expect(html).toContain("¿Cuáles son los precios");
+    expect(html).toContain("¿Cómo pago");
+  });
+
+  test("el filtro de búsqueda funciona", async ({ page }) => {
+    await page.goto(`${BASE}/contacto`);
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(1000);
+
+    // Buscar "pago"
+    const searchInput = page.locator('input[placeholder*="Buscar en preguntas"]');
+    await searchInput.fill("pago");
+    await page.waitForTimeout(500);
+
+    // Debería mostrar solo las FAQs que contienen "pago"
+    const faqItems = page.locator("details");
+    const count = await faqItems.count();
+    expect(count).toBeLessThan(10);
+    expect(count).toBeGreaterThanOrEqual(1);
+  });
+
+  test("el formulario de contacto está presente", async ({ page }) => {
+    await page.goto(`${BASE}/contacto`);
+    await page.waitForLoadState("networkidle");
+
+    const html = await page.content();
+    expect(html).toContain("Envíanos un mensaje");
+    expect(html).toContain("Tu nombre");
+    expect(html).toContain("Mensaje");
+  });
+
+  test("el enlace de WhatsApp está presente", async ({ page }) => {
+    await page.goto(`${BASE}/contacto`);
+    await page.waitForLoadState("networkidle");
+
+    const html = await page.content();
+    expect(html).toContain("wa.me");
+  });
+});

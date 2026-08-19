@@ -11,10 +11,11 @@ export interface WhatsAppMessageData {
   parameters: string;
   estimatedPrice: number;
   createdAt: string;
+  files?: string[];
 }
 
 function buildMessage(data: WhatsAppMessageData): string {
-  return [
+  const lines = [
     "【Nueva Solicitud de Delega】",
     "",
     `📋 ID de seguimiento: ${data.token}`,
@@ -25,7 +26,16 @@ function buildMessage(data: WhatsAppMessageData): string {
     `⚙️ Parámetros: ${data.parameters}`,
     `💰 Precio estimado: $${data.estimatedPrice}`,
     `📅 Fecha de solicitud: ${data.createdAt}`,
-  ].join("\n");
+  ];
+
+  if (data.files && data.files.length > 0) {
+    lines.push("", "📎 Archivos adjuntos:");
+    data.files.forEach((url, i) => {
+      lines.push(`${i + 1}. ${url}`);
+    });
+  }
+
+  return lines.join("\n");
 }
 
 export function WhatsAppGenerator({

@@ -8,8 +8,9 @@ import { FileUpload } from "@/components/landing/FileUpload";
 import { getServiceConfig, type ServiceTypeConfig } from "@/lib/config/serviceTypes";
 import { generateTrackingUrl } from "@/lib/tracking";
 import { estimatePrice } from "@/lib/pricing";
+import { uploadOrderFiles } from "@/lib/storage";
 import { cn } from "@/lib/utils";
-import { X, Check, ChevronLeft, ChevronRight, Send, Pencil } from "lucide-react";
+import { X, Check, ChevronLeft, ChevronRight, Send, Pencil, Loader2 } from "lucide-react";
 import type { ServiceType } from "@/lib/types";
 
 const STEPS = [
@@ -322,6 +323,9 @@ export function DelegatePage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [trackingToken, setTrackingToken] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fileUrls, setFileUrls] = useState<string[]>([]);
+  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
 
   const estimatedPrice = useMemo(
     () => (selectedService ? estimatePrice(selectedService, form.fieldValues) : 0),
@@ -374,8 +378,13 @@ export function DelegatePage() {
 
   async function handleSubmit() {
     if (!selectedService) return;
+    setIsSubmitting(true);
+    setUploadErrors([]);
+
+    // Generar token de seguimiento
+    const orderId = `ORD-${Date.now()}`;
     const token = await generateTrackingUrl({
-      id: `ORD-${Date.now()}`,
+      id: orderId,
       clientName: form.clientName,
       serviceType: selectedService,
       status: "nueva",
@@ -384,8 +393,19 @@ export function DelegatePage() {
       dueDate: "",
       paymentStatus: "unpaid",
     });
+
+    // Subir archivos si hay
+    if (form.files.length > 0) {
+      const { urls, errors } = await uploadOrderFiles(orderId, form.files);
+      setFileUrls(urls);
+      if (errors.length > 0) {
+        setUploadErrors(errors);
+      }
+    }
+
     setTrackingToken(token);
     setSubmitted(true);
+    setIsSubmitting(false);
   }
 
   function goToStep(targetStep: number) {
@@ -406,6 +426,7 @@ export function DelegatePage() {
         .join(", "),
       estimatedPrice,
       createdAt: `${now.toISOString().slice(0, 10)} ${now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}`,
+      files: fileUrls.length > 0 ? fileUrls : undefined,
     };
 
     return (
@@ -537,13 +558,33 @@ export function DelegatePage() {
               {/* Step 4: Send to WhatsApp */}
               {step === 4 && (
                 <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8 pt-6 border-t border-border-subtle">
+                  {uploadErrors.length > 0 && (
+                    <div className="w-full mb-4 p-3 rounded-lg bg-error/10 border border-error/20">
+                      <p className="text-sm font-semibold text-error mb-1">Error al subir archivos:</p>
+                      <ul className="text-xs text-on-surface-variant list-disc list-inside">
+                        {uploadErrors.map((err, i) => (
+                          <li key={i}>{err}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   <button
                     type="button"
                     onClick={handleSubmit}
-                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-8 py-3 text-sm font-semibold text-white transition-all hover:bg-[#1DA851] shadow-ambient hover:shadow-ambient-hover"
+                    disabled={isSubmitting}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-8 py-3 text-sm font-semibold text-white transition-all hover:bg-[#1DA851] shadow-ambient hover:shadow-ambient-hover disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Send className="w-4 h-4" />
-                    Enviar por WhatsApp
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Subiendo archivos...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Enviar por WhatsApp
+                      </>
+                    )}
                   </button>
                 </div>
               )}

@@ -63,8 +63,8 @@ export function PrivacidadPage() {
             <h2 className="font-display text-headline-sm font-bold text-primary mb-2">5. Compartición de datos</h2>
             <p className="text-sm leading-relaxed">
               Delega <strong>no vende ni comparte</strong> sus datos personales con terceros para fines comerciales.
-              Los datos se almacenan en Supabase (infraestructura en Estados Unidos) con estándares de seguridad
-              industriales. Solo el equipo de Delega tiene acceso a sus datos para prestar el servicio.
+              Los datos se almacenan en nuestra base de datos con altos estándares de seguridad
+              Solo el equipo de Delega tiene acceso a sus datos para prestar el servicio.
             </p>
           </section>
 
