@@ -17,10 +17,8 @@ export interface PagoMovilInfo {
 }
 
 export type ServiceType =
-  | "ensayo"
+  | "trabajos_escritos"
   | "presentacion"
-  | "investigacion"
-  | "formato"
   | "diseno"
   | "video";
 
@@ -52,7 +50,8 @@ export type ActionType =
   | "update_client"
   | "create_subscription"
   | "cancel_subscription"
-  | "renew_subscription";
+  | "renew_subscription"
+  | "delete_attachment";
 
 export interface Operator {
   id: string;
@@ -60,6 +59,9 @@ export interface Operator {
   displayName: string;
   passwordHash: string;
   role: OperatorRole;
+  services: ServiceType[];
+  color: string;
+  active: boolean;
   createdAt: number;
 }
 
@@ -108,10 +110,10 @@ export interface OrderFile {
   uploadedAt: string;
 }
 
-export interface OrderDetailsEnsayo {
+export interface OrderDetailsTrabajosEscritos {
+  subtipo: "ensayo" | "tesis" | "monografia" | "informe" | "articulo" | "formato";
   tema: string;
   paginas: "1-3" | "4-7" | "8+";
-  normas: "ninguna" | "APA" | "ISO" | "otra";
   tieneGuia: boolean;
   instruccionesEspeciales?: string;
 }
@@ -126,24 +128,8 @@ export interface OrderDetailsPresentacion {
   instruccionesEspeciales?: string;
 }
 
-export interface OrderDetailsInvestigacion {
-  tema: string;
-  profundidad: "basica" | "media" | "avanzada";
-  fuentesMinimas: "no-importa" | "3-5" | "6-10" | "mas-10";
-  formatoEntrega: "resumen" | "fichas" | "estado-del-arte";
-  tieneGuia: boolean;
-}
-
-export interface OrderDetailsFormato {
-  tipoDocumento: "word" | "pdf" | "powerpoint";
-  norma: "APA" | "ISO" | "otra";
-  necesitaIndice: boolean;
-  necesitaPortada: boolean;
-  notasAdicionales?: string;
-}
-
 export interface OrderDetailsDiseno {
-  tipoDiseno: "flayer" | "infografia" | "portada" | "otro";
+  tipoDiseno: "flayer" | "infografia" | "portada" | "flyers_animados" | "paquete_fotos" | "otro";
   proposito: string;
   colores?: string;
   textoIncluir: string;
@@ -169,12 +155,30 @@ export interface OrderDetailsVideo {
 }
 
 export type OrderDetails =
-  | OrderDetailsEnsayo
+  | OrderDetailsTrabajosEscritos
   | OrderDetailsPresentacion
-  | OrderDetailsInvestigacion
-  | OrderDetailsFormato
   | OrderDetailsDiseno
   | OrderDetailsVideo;
+
+export type PaymentStatus = "unpaid" | "partial" | "paid";
+
+export interface StatusTransition {
+  from: OrderStatus;
+  to: OrderStatus;
+  by: string;
+  at: number;
+}
+
+export interface OrderAttachment {
+  id: string;
+  orderId: string;
+  name: string;
+  mime: string;
+  size: number;
+  blob: Blob;
+  author: string;
+  uploadedAt: string;
+}
 
 export interface Order {
   id: string;
@@ -189,13 +193,15 @@ export interface Order {
   totalPaid: number;
   paymentRef: string;
   status: OrderStatus;
+  urgent: boolean;
+  paymentStatus: PaymentStatus;
+  statusHistory: StatusTransition[];
   createdAt: string;
   dueDate: string | null;
   completedAt: string | null;
   notes: OrderNote[];
   subscriptionId: string | null;
   coverageTipo: CoverageTipo;
-  files: OrderFile[];
 }
 
 export interface OperatorStats {
@@ -229,6 +235,8 @@ export interface Config {
   sessionTimeoutHours: number;
   orderCounter: number;
   subscriptionCounter: number;
+  notificationEnabled: boolean;
+  serviceOperatorMap: Record<ServiceType, string>;
   priceRanges: PriceRanges;
   faqs: FaqItem[];
   pagoMovil: PagoMovilInfo;

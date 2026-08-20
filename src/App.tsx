@@ -6,6 +6,9 @@ import { ServicesPage } from "@/pages/ServicesPage";
 import { DelegatePage } from "@/pages/DelegatePage";
 import { ContactPage } from "@/pages/ContactPage";
 import { OrderTrackingPage } from "@/pages/OrderTrackingPage";
+import { TerminosPage } from "@/pages/legal/TerminosPage";
+import { PrivacidadPage } from "@/pages/legal/PrivacidadPage";
+import { IntegridadPage } from "@/pages/legal/IntegridadPage";
 import { LoginPage } from "@/pages/admin/LoginPage";
 
 const AdminLayout = lazy(() =>
@@ -38,6 +41,9 @@ const ActivityLogPage = lazy(() =>
 const StatisticsPage = lazy(() =>
   import("@/pages/admin/StatisticsPage").then((m) => ({ default: m.StatisticsPage })),
 );
+const ExportPage = lazy(() =>
+  import("@/pages/admin/ExportPage").then((m) => ({ default: m.ExportPage })),
+);
 
 function AdminGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -69,6 +75,7 @@ function AdminRoutes() {
           <Route path="suscripciones" element={<SubscriptionsPage />} />
           <Route path="activity-log" element={<ActivityLogPage />} />
           <Route path="estadisticas" element={<StatisticsPage />} />
+          <Route path="exportar" element={<ExportPage />} />
         </Route>
       </Routes>
     </Suspense>
@@ -84,6 +91,9 @@ export function App() {
           <Route path="/servicios" element={<ServicesPage />} />
           <Route path="/delegar" element={<DelegatePage />} />
           <Route path="/contacto" element={<ContactPage />} />
+          <Route path="/legal/terminos" element={<TerminosPage />} />
+          <Route path="/legal/privacidad" element={<PrivacidadPage />} />
+          <Route path="/legal/integridad" element={<IntegridadPage />} />
           <Route path="/orden/:token" element={<OrderTrackingPage />} />
           <Route path="/admin/login" element={<LoginPage />} />
           <Route

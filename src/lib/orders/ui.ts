@@ -1,4 +1,4 @@
-import type { Order, OrderStatus, Operator, ServiceType } from "@/lib/types";
+import type { Order, OrderStatus, Operator, ServiceType, OrderDetails } from "@/lib/types";
 import { canTransitionFrom } from "@/lib/orders/stateMachine";
 
 // Helpers de presentación para el dominio de órdenes (shared por list/detail/dashboard).
@@ -14,10 +14,8 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
 };
 
 export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
-  ensayo: "Ensayo",
+  trabajos_escritos: "Trabajos Escritos",
   presentacion: "Presentación",
-  investigacion: "Investigación",
-  formato: "Formato",
   diseno: "Diseño",
   video: "Video",
 };
@@ -57,6 +55,30 @@ export function isOverdue(order: Order): boolean {
   return new Date(order.dueDate).getTime() < Date.now();
 }
 
+// Vence hoy: dueDate es hoy y estado activo (no completada/cancelada).
+export function isDueToday(order: Order): boolean {
+  if (!order.dueDate) return false;
+  if (order.status === "completada" || order.status === "cancelada") return false;
+  
+  const today = new Date();
+  const dueDate = new Date(order.dueDate);
+  
+  return dueDate.toDateString() === today.toDateString();
+}
+
+// Vence mañana: dueDate es mañana y estado activo (no completada/cancelada).
+export function isDueTomorrow(order: Order): boolean {
+  if (!order.dueDate) return false;
+  if (order.status === "completada" || order.status === "cancelada") return false;
+  
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const dueDate = new Date(order.dueDate);
+  
+  return dueDate.toDateString() === tomorrow.toDateString();
+}
+
 export function formatDueDate(dueDate: string | null): string {
   if (!dueDate) return "—";
   const d = new Date(dueDate);
@@ -74,8 +96,8 @@ export function operatorLabel(
 // OrderDetails vacío con forma válida para cada serviceType (campos mínimos).
 export function defaultOrderDetails(serviceType: ServiceType): OrderDetails {
   switch (serviceType) {
-    case "ensayo":
-      return { tema: "", paginas: "1-3", normas: "ninguna", tieneGuia: false };
+    case "trabajos_escritos":
+      return { subtipo: "ensayo", tema: "", paginas: "1-3", tieneGuia: false };
     case "presentacion":
       return {
         tema: "",
@@ -83,21 +105,6 @@ export function defaultOrderDetails(serviceType: ServiceType): OrderDetails {
         estilo: "no-importa",
         incluyeImagenes: "no",
         tieneGuia: false,
-      };
-    case "investigacion":
-      return {
-        tema: "",
-        profundidad: "media",
-        fuentesMinimas: "no-importa",
-        formatoEntrega: "resumen",
-        tieneGuia: false,
-      };
-    case "formato":
-      return {
-        tipoDocumento: "word",
-        norma: "APA",
-        necesitaIndice: false,
-        necesitaPortada: false,
       };
     case "diseno":
       return {

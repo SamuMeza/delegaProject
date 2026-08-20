@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function LoginPage() {
-  const { login } = useAuth();
+  const { login, remainingAttempts } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const isBlocked = remainingAttempts === 0;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -22,21 +24,36 @@ export function LoginPage() {
     if (ok) {
       navigate("/admin", { replace: true });
     } else {
-      setError("Credenciales incorrectas");
+      if (remainingAttempts === 0) {
+        const blocked = (() => {
+          try {
+            return Number(sessionStorage.getItem("delega_login_blocked_until")) || 0;
+          } catch {
+            return 0;
+          }
+        })();
+        const remainingMin = blocked > 0 ? Math.ceil((blocked - Date.now()) / 60000) : 15;
+        setError(`Demasiados intentos. Intenta de nuevo en ${remainingMin} minuto(s).`);
+      } else {
+        setError(`Credenciales incorrectas. Quedan ${remainingAttempts} intento(s).`);
+      }
       setPassword("");
     }
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+    <main className="flex min-h-screen items-center justify-center bg-surface-studio p-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm space-y-4 rounded-xl border bg-card p-6 shadow-sm"
+        className="w-full max-w-md space-y-6 bg-surface-container-lowest rounded-xl shadow-ambient p-8"
       >
-        <h1 className="text-xl font-semibold">Acceso operadores</h1>
+        <div className="text-center">
+          <h1 className="font-display text-headline-md text-primary font-bold mb-2">Acceso operadores</h1>
+          <p className="text-sm text-on-surface-variant">Ingresa tus credenciales para continuar</p>
+        </div>
 
         <div className="space-y-2">
-          <Label htmlFor="username">Usuario</Label>
+          <Label htmlFor="username" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Usuario</Label>
           <Input
             id="username"
             name="username"
@@ -44,11 +61,13 @@ export function LoginPage() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
+            disabled={isBlocked}
+            placeholder="Tu usuario"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Contraseña</Label>
+          <Label htmlFor="password" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Contraseña</Label>
           <Input
             id="password"
             name="password"
@@ -57,17 +76,19 @@ export function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={isBlocked}
+            placeholder="Tu contraseña"
           />
         </div>
 
         {error && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-error bg-error-container/10 p-3 rounded-lg">
             {error}
           </p>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Accediendo…" : "Entrar"}
+        <Button type="submit" className="w-full h-11" disabled={loading || isBlocked}>
+          {loading ? "Accediendo..." : "Entrar"}
         </Button>
       </form>
     </main>

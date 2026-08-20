@@ -1,85 +1,97 @@
-import { useLiveQuery } from "dexie-react-hooks";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Plus, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useClients, useSubscriptions } from "@/hooks/useDelegaDB";
-import { db } from "@/lib/db/delegaDb";
+import { useClients, useSubscriptions } from "@/hooks/useDatabase";
+import { useAuth } from "@/hooks/useAuth";
+import { logActivity } from "@/lib/db/activity";
+import { supabase } from "@/lib/supabase";
 import type { Client } from "@/lib/types";
 
-function daysUntilEnd(endDate: string): number {
-  const now = new Date();
-  const end = new Date(endDate);
-  return Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+function getCurrentMonthKey(): string {
+  return `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
 }
 
-function ordersThisMonth(sub: Client["subscription"]): number {
-  if (!sub) return 0;
-  const key = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
-  return sub.usedPerMonth[key] ?? 0;
-}
 
 export function ClientsListPage() {
-  const clients = useClients();
+  const { data: clients, refetch: refetchClients } = useClients();
   const subscriptions = useSubscriptions();
+  const { session } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [notes, setNotes] = useState("");
+  const [allOrders, setAllOrders] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("orders")
+      .select("client_phone, created_at")
+      .then(({ data }) => setAllOrders(data || []));
+  }, []);
 
   async function handleCreate() {
     if (!name.trim() || !phone.trim()) return;
-    await db.clients.put({
+    await supabase.from("clients").upsert({
       phone: phone.trim(),
       name: name.trim(),
-      email: email.trim() || undefined,
-      notes: notes.trim() || undefined,
-      totalOrders: 0,
-      totalSpent: 0,
+      email: email.trim() || null,
+      notes: notes.trim() || null,
+      total_orders: 0,
+      total_spent: 0,
       subscription: null,
       history: [],
     });
-    await db.activity_log.add({
-      id: `LOG-${Date.now()}`,
-      operatorId: "operator",
+    await logActivity({
+      operatorId: session.operatorId,
       action: "create_client",
       targetId: phone.trim(),
       details: `Cliente ${name.trim()} creado`,
-      timestamp: new Date().toISOString(),
     });
     setName("");
     setPhone("");
     setEmail("");
     setNotes("");
     setShowCreate(false);
+    refetchClients();
   }
 
   const activeSubs = subscriptions?.filter((s) => s.status === "activa") ?? [];
 
-  const allOrders = useLiveQuery(() => db.orders.toArray(), []) ?? [];
   const lastContactMap = new Map<string, string>();
   for (const order of allOrders) {
-    const existing = lastContactMap.get(order.clientPhone);
-    if (!existing || order.createdAt > existing) {
-      lastContactMap.set(order.clientPhone, order.createdAt);
+    const existing = lastContactMap.get(order.client_phone);
+    if (!existing || order.created_at > existing) {
+      lastContactMap.set(order.client_phone, order.created_at);
     }
   }
 
   function getClientAlert(client: Client): { show: boolean; days: number } {
     const sub = activeSubs.find((s) => s.clientPhone === client.phone);
     if (!sub) return { show: false, days: 0 };
-    const days = daysUntilEnd(sub.endDate);
+    const days = Math.ceil((new Date(sub.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     return { show: days <= 15, days };
   }
 
+  const currentMonth = getCurrentMonthKey();
+  const ordersThisMonthByPhone = new Map<string, number>();
+  for (const order of allOrders) {
+    if (order.created_at.startsWith(currentMonth)) {
+      ordersThisMonthByPhone.set(order.client_phone, (ordersThisMonthByPhone.get(order.client_phone) ?? 0) + 1);
+    }
+  }
+
   return (
-    <main className="p-8 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Clientes</h1>
+        <div>
+          <h2 className="font-display text-headline-md text-primary mb-2">Clientes</h2>
+          <p className="text-sm text-on-surface-variant">Gestión de clientes y contactos.</p>
+        </div>
         <Button onClick={() => setShowCreate(!showCreate)}>
           <Plus className="h-4 w-4" />
           Nuevo cliente
@@ -87,25 +99,25 @@ export function ClientsListPage() {
       </div>
 
       {showCreate && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Nuevo cliente</CardTitle>
+        <Card className="p-6">
+          <CardHeader className="px-0 pb-4">
+            <CardTitle className="text-headline-sm text-primary font-display">Nuevo cliente</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="px-0 space-y-4">
             <div className="grid gap-2">
-              <Label htmlFor="c-name">Nombre</Label>
+              <Label htmlFor="c-name" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Nombre</Label>
               <Input id="c-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre completo" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="c-phone">Teléfono</Label>
+              <Label htmlFor="c-phone" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Teléfono</Label>
               <Input id="c-phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0412-1234567" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="c-email">Email (opcional)</Label>
+              <Label htmlFor="c-email" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Email (opcional)</Label>
               <Input id="c-email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="correo@ejemplo.com" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="c-notes">Notas (opcional)</Label>
+              <Label htmlFor="c-notes" className="text-sm font-semibold text-on-surface uppercase tracking-wider">Notas (opcional)</Label>
               <Input id="c-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Referencia..." />
             </div>
             <Button onClick={handleCreate} disabled={!name.trim() || !phone.trim()}>
@@ -115,51 +127,51 @@ export function ClientsListPage() {
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de clientes</CardTitle>
+      <Card className="p-6">
+        <CardHeader className="px-0 pb-4">
+          <CardTitle className="text-headline-sm text-primary font-display">Lista de clientes</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0">
           {!clients || clients.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No hay clientes registrados.</p>
+            <p className="text-sm text-on-surface-variant">No hay clientes registrados.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th className="pb-2 font-medium">Nombre</th>
-                    <th className="pb-2 font-medium">Teléfono</th>
-                    <th className="pb-2 font-medium">Último contacto</th>
-                    <th className="pb-2 font-medium">Suscripción activa</th>
-                    <th className="pb-2 font-medium">Órdenes del mes</th>
-                    <th className="pb-2 font-medium">Alerta</th>
+                  <tr className="bg-surface-container-low border-b border-border-subtle text-left text-on-surface-variant">
+                    <th className="py-4 px-6 font-semibold uppercase tracking-wider text-xs">Nombre</th>
+                    <th className="py-4 px-6 font-semibold uppercase tracking-wider text-xs">Teléfono</th>
+                    <th className="py-4 px-6 font-semibold uppercase tracking-wider text-xs">Último contacto</th>
+                    <th className="py-4 px-6 font-semibold uppercase tracking-wider text-xs">Suscripción</th>
+                    <th className="py-4 px-6 font-semibold uppercase tracking-wider text-xs">Órdenes mes</th>
+                    <th className="py-4 px-6 font-semibold uppercase tracking-wider text-xs">Alerta</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-border-subtle">
                   {clients
                     .filter((c) => !c.name.startsWith("[desactivado]"))
                     .map((client) => {
                       const alert = getClientAlert(client);
                       const sub = client.subscription;
-                      const monthly = ordersThisMonth(client.subscription);
+                      const monthly = ordersThisMonthByPhone.get(client.phone) ?? 0;
                       return (
-                        <tr key={client.phone} className="border-b hover:bg-muted/50">
-                          <td className="py-2">
-                            <Link to={`/admin/clientes/${client.phone}`} className="text-primary hover:underline">
+                        <tr key={client.phone} className="hover:bg-surface-container-low transition-colors">
+                          <td className="py-4 px-6">
+                            <Link to={`/admin/clientes/${client.phone}`} className="text-primary font-medium hover:underline">
                               {client.name}
                             </Link>
                           </td>
-                          <td className="py-2">{client.phone}</td>
-                          <td className="py-2">
+                          <td className="py-4 px-6 text-on-surface-variant">{client.phone}</td>
+                          <td className="py-4 px-6 text-on-surface-variant">
                             {lastContactMap.has(client.phone)
                               ? new Date(lastContactMap.get(client.phone)!).toLocaleDateString()
                               : "—"}
                           </td>
-                          <td className="py-2">{sub ? `${sub.type} (${sub.monthlyQuota}/mes)` : "—"}</td>
-                          <td className="py-2">{monthly}</td>
-                          <td className="py-2">
+                          <td className="py-4 px-6 text-on-surface-variant">{sub ? `${sub.type} (${sub.monthlyQuota}/mes)` : "—"}</td>
+                          <td className="py-4 px-6 text-on-surface-variant">{monthly}</td>
+                          <td className="py-4 px-6">
                             {alert.show && (
-                              <span className="inline-flex items-center gap-1 text-xs text-amber-600">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-urgency-alert">
                                 <AlertTriangle className="h-3 w-3" />
                                 {alert.days} día{alert.days !== 1 ? "s" : ""}
                               </span>
@@ -174,6 +186,6 @@ export function ClientsListPage() {
           )}
         </CardContent>
       </Card>
-    </main>
+    </div>
   );
 }

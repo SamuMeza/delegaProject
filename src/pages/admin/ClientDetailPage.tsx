@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Pencil, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,16 +6,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { useClient, useClientSubscriptions } from "@/hooks/useDelegaDB";
-import { db } from "@/lib/db/delegaDb";
+import { useClient, useClientSubscriptions } from "@/hooks/useDatabase";
+import { useAuth } from "@/hooks/useAuth";
+import { logActivity } from "@/lib/db/activity";
+import { supabase } from "@/lib/supabase";
 import { generateSubscriptionId } from "@/lib/id-gen";
 import type { SubscriptionType } from "@/lib/types";
 
 export function ClientDetailPage() {
   const { phone } = useParams<{ phone: string }>();
   const navigate = useNavigate();
-  const client = useClient(phone);
-  const subscriptions = useClientSubscriptions(phone);
+  const { session } = useAuth();
+  const { data: client, refetch: refetchClient } = useClient(phone);
+  const { data: subscriptions, refetch: refetchSubs } = useClientSubscriptions(phone);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -29,7 +32,7 @@ export function ClientDetailPage() {
   if (!client) {
     return (
       <main className="p-8">
-        <p className="text-sm text-muted-foreground">Cargando cliente…</p>
+        <p className="text-sm text-on-surface-variant">Cargando cliente…</p>
       </main>
     );
   }
@@ -42,21 +45,30 @@ export function ClientDetailPage() {
 
   async function handleSave() {
     if (!name.trim()) return;
-    await db.clients.put({
-      ...client,
-      name: name.trim(),
-      email: email.trim() || undefined,
-      notes: notes.trim() || undefined,
-    });
-    await db.activity_log.add({
-      id: `LOG-${Date.now()}`,
-      operatorId: "operator",
-      action: "update_client",
-      targetId: client.phone,
-      details: `Cliente ${name.trim()} actualizado`,
-      timestamp: new Date().toISOString(),
-    });
-    setEditing(false);
+    try {
+      const { error } = await supabase
+        .from("clients")
+        .update({
+          name: name.trim(),
+          email: email.trim() || null,
+          notes: notes.trim() || null,
+        })
+        .eq("phone", client.phone);
+      if (error) {
+        console.error("Error updating client:", error);
+        return;
+      }
+      await logActivity({
+        operatorId: session.operatorId,
+        action: "update_client",
+        targetId: client.phone,
+        details: `Cliente ${name.trim()} actualizado`,
+      });
+      setEditing(false);
+      refetchClient();
+    } catch (e) {
+      console.error("Error en handleSave:", e);
+    }
   }
 
   async function handleDeactivate() {
@@ -66,25 +78,34 @@ export function ClientDetailPage() {
     }
     const confirmed = window.confirm("¿Desactivar este cliente? No se eliminarán sus órdenes ni suscripciones.");
     if (!confirmed) return;
-    await db.clients.update(client.phone, { name: `[desactivado] ${client.name}` });
+    await supabase
+      .from("clients")
+      .update({ name: `[desactivado] ${client.name}` })
+      .eq("phone", client.phone);
     navigate("/admin/clientes");
   }
 
   async function handleCancelSubscription(subId: string) {
     const confirmed = window.confirm("¿Cancelar esta suscripción?");
     if (!confirmed) return;
-    await db.subscriptions.update(subId, { status: "cancelada" });
+    await supabase
+      .from("subscriptions")
+      .update({ status: "cancelada" })
+      .eq("id", subId);
     if (client.subscription) {
-      await db.clients.update(client.phone, { subscription: null });
+      await supabase
+        .from("clients")
+        .update({ subscription: null })
+        .eq("phone", client.phone);
     }
-    await db.activity_log.add({
-      id: `LOG-${Date.now()}`,
-      operatorId: "operator",
+    await logActivity({
+      operatorId: session.operatorId,
       action: "cancel_subscription",
       targetId: subId,
       details: `Suscripción ${subId} cancelada`,
-      timestamp: new Date().toISOString(),
     });
+    refetchSubs();
+    refetchClient();
   }
 
   const activeSub = subscriptions?.find((s) => s.status === "activa");
@@ -104,24 +125,35 @@ export function ClientDetailPage() {
     endDate.setMonth(endDate.getMonth() + 3);
     const endStr = endDate.toISOString().split("T")[0];
 
-    const config = await db.config.get("app");
-    const nextCounter = (config?.subscriptionCounter ?? 0) + 1;
+    const { data: config } = await supabase
+      .from("config")
+      .select("subscription_counter")
+      .eq("id", "app")
+      .maybeSingle();
+
+    const nextCounter = (config?.subscription_counter ?? 0) + 1;
     const newId = `SUB-${String(nextCounter).padStart(3, "0")}`;
 
-    await db.transaction("rw", db.subscriptions, db.clients, db.config, async () => {
-      await db.subscriptions.update(subId, { status: "reemplazada" });
-      await db.subscriptions.add({
-        id: newId,
-        clientPhone: client.phone,
-        type: sub.type,
-        startDate,
-        endDate: endStr,
-        price: sub.price,
-        status: "activa",
-        monthlyQuota: sub.monthlyQuota,
-        usedPerMonth: {},
-      });
-      await db.clients.update(client.phone, {
+    await supabase
+      .from("subscriptions")
+      .update({ status: "reemplazada" })
+      .eq("id", subId);
+
+    await supabase.from("subscriptions").insert({
+      id: newId,
+      client_phone: client.phone,
+      type: sub.type,
+      start_date: startDate,
+      end_date: endStr,
+      price: sub.price,
+      status: "activa",
+      monthly_quota: sub.monthlyQuota,
+      used_per_month: {},
+    });
+
+    await supabase
+      .from("clients")
+      .update({
         subscription: {
           type: sub.type,
           startDate,
@@ -131,17 +163,22 @@ export function ClientDetailPage() {
           monthlyQuota: sub.monthlyQuota,
           usedPerMonth: {},
         },
-      });
-      await db.config.update("app", { subscriptionCounter: nextCounter });
-    });
-    await db.activity_log.add({
-      id: `LOG-${Date.now()}`,
-      operatorId: "operator",
+      })
+      .eq("phone", client.phone);
+
+    await supabase
+      .from("config")
+      .update({ subscription_counter: nextCounter })
+      .eq("id", "app");
+
+    await logActivity({
+      operatorId: session.operatorId,
       action: "renew_subscription",
       targetId: newId,
       details: `Suscripción ${newId} renovada hasta ${endStr}`,
-      timestamp: new Date().toISOString(),
     });
+    refetchSubs();
+    refetchClient();
   }
 
   async function handleCreateSubscription() {
@@ -152,23 +189,29 @@ export function ClientDetailPage() {
 
     const newId = await generateSubscriptionId();
 
-    await db.transaction("rw", db.subscriptions, db.clients, db.config, async () => {
-      const existingActive = subscriptions?.find((s) => s.status === "activa");
-      if (existingActive) {
-        await db.subscriptions.update(existingActive.id, { status: "reemplazada" });
-      }
-      await db.subscriptions.add({
-        id: newId,
-        clientPhone: client.phone,
-        type: subType,
-        startDate,
-        endDate: endStr,
-        price: subPrice,
-        status: "activa",
-        monthlyQuota: subQuota,
-        usedPerMonth: {},
-      });
-      await db.clients.update(client.phone, {
+    const existingActive = subscriptions?.find((s) => s.status === "activa");
+    if (existingActive) {
+      await supabase
+        .from("subscriptions")
+        .update({ status: "reemplazada" })
+        .eq("id", existingActive.id);
+    }
+
+    await supabase.from("subscriptions").insert({
+      id: newId,
+      client_phone: client.phone,
+      type: subType,
+      start_date: startDate,
+      end_date: endStr,
+      price: subPrice,
+      status: "activa",
+      monthly_quota: subQuota,
+      used_per_month: {},
+    });
+
+    await supabase
+      .from("clients")
+      .update({
         subscription: {
           type: subType,
           startDate,
@@ -178,33 +221,34 @@ export function ClientDetailPage() {
           monthlyQuota: subQuota,
           usedPerMonth: {},
         },
-      });
-    });
-    await db.activity_log.add({
-      id: `LOG-${Date.now()}`,
-      operatorId: "operator",
+      })
+      .eq("phone", client.phone);
+
+    await logActivity({
+      operatorId: session.operatorId,
       action: "create_subscription",
       targetId: newId,
       details: `Suscripción ${newId} creada para ${client.name}`,
-      timestamp: new Date().toISOString(),
     });
     setShowCreateSub(false);
     setSubStartDate(new Date().toISOString().split("T")[0]);
+    refetchSubs();
+    refetchClient();
   }
 
   return (
-    <main className="p-8 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate("/admin/clientes")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-2xl font-semibold">{client.name}</h1>
+        <h2 className="font-display text-headline-md text-primary">{client.name}</h2>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="p-6">
+        <CardHeader className="px-0 pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle>Datos del cliente</CardTitle>
+            <CardTitle className="text-headline-sm text-primary font-display">Datos del cliente</CardTitle>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => setEditing(!editing)}>
                 <Pencil className="h-4 w-4" />
@@ -217,10 +261,10 @@ export function ClientDetailPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="px-0 space-y-4">
           <div className="grid gap-1">
-            <span className="text-xs text-muted-foreground">Teléfono</span>
-            <span className="text-sm">{client.phone}</span>
+            <span className="text-xs text-on-surface-variant font-semibold uppercase tracking-wider">Teléfono</span>
+            <span className="text-sm text-on-surface">{client.phone}</span>
           </div>
           {editing ? (
             <>
@@ -241,27 +285,27 @@ export function ClientDetailPage() {
           ) : (
             <>
               <div className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Nombre</span>
+                <span className="text-xs text-on-surface-variant">Nombre</span>
                 <span className="text-sm">{client.name}</span>
               </div>
               {client.email && (
                 <div className="grid gap-1">
-                  <span className="text-xs text-muted-foreground">Email</span>
+                  <span className="text-xs text-on-surface-variant">Email</span>
                   <span className="text-sm">{client.email}</span>
                 </div>
               )}
               {client.notes && (
                 <div className="grid gap-1">
-                  <span className="text-xs text-muted-foreground">Notas</span>
+                  <span className="text-xs text-on-surface-variant">Notas</span>
                   <span className="text-sm">{client.notes}</span>
                 </div>
               )}
               <div className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Total órdenes</span>
+                <span className="text-xs text-on-surface-variant">Total órdenes</span>
                 <span className="text-sm">{client.totalOrders}</span>
               </div>
               <div className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Total gastado</span>
+                <span className="text-xs text-on-surface-variant">Total gastado</span>
                 <span className="text-sm">${client.totalSpent.toFixed(2)}</span>
               </div>
             </>
@@ -329,7 +373,7 @@ export function ClientDetailPage() {
             </Card>
           )}
           {sortedSubs.length === 0 && !showCreateSub ? (
-            <p className="text-sm text-muted-foreground">Sin suscripciones registradas.</p>
+            <p className="text-sm text-on-surface-variant">Sin suscripciones registradas.</p>
           ) : (
             <div className="space-y-3">
               {sortedSubs.map((sub) => {
@@ -340,7 +384,7 @@ export function ClientDetailPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <span className="font-medium">{sub.id}</span>
-                        <span className={`ml-2 text-xs font-medium ${sub.status === "activa" ? "text-green-600" : sub.status === "vencida" ? "text-red-600" : "text-muted-foreground"}`}>
+                        <span className={`ml-2 text-xs font-medium ${sub.status === "activa" ? "text-brand-operator-2" : sub.status === "vencida" ? "text-error" : "text-on-surface-variant"}`}>
                           {sub.status === "activa" ? "Activa" : sub.status === "vencida" ? "Vencida" : sub.status === "cancelada" ? "Cancelada" : "Reemplazada"}
                         </span>
                       </div>
@@ -360,7 +404,7 @@ export function ClientDetailPage() {
                         )}
                       </div>
                     </div>
-                    <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                    <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-on-surface-variant">
                       <span>Tipo: {sub.type}</span>
                       <span>Cupo: {used}/{sub.monthlyQuota} usados este mes</span>
                       <span>Inicio: {new Date(sub.startDate).toLocaleDateString()}</span>
@@ -384,40 +428,37 @@ export function ClientDetailPage() {
           <OrderHistory clientPhone={client.phone} />
         </CardContent>
       </Card>
-    </main>
+    </div>
   );
 }
 
 function OrderHistory({ clientPhone }: { clientPhone: string }) {
-  const [orders, setOrders] = useState<Array<{ id: string; serviceType: string; status: string; price: number; createdAt: string }>>([]);
+  const [orders, setOrders] = useState<Array<{ id: string; service_type: string; status: string; price: number; created_at: string }>>([]);
   const [loaded, setLoaded] = useState(false);
 
-  useState(() => {
-    db.orders
-      .where("clientPhone")
-      .equals(clientPhone)
-      .toArray()
-      .then((result) => {
-        setOrders(
-          result
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-            .map((o) => ({ id: o.id, serviceType: o.serviceType, status: o.status, price: o.price, createdAt: o.createdAt })),
-        );
+  useEffect(() => {
+    supabase
+      .from("orders")
+      .select("id, service_type, status, price, created_at")
+      .eq("client_phone", clientPhone)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        setOrders(data || []);
         setLoaded(true);
       });
-  });
+  }, [clientPhone]);
 
-  if (!loaded) return <p className="text-sm text-muted-foreground">Cargando…</p>;
+  if (!loaded) return <p className="text-sm text-on-surface-variant">Cargando…</p>;
 
   if (orders.length === 0) {
-    return <p className="text-sm text-muted-foreground">Sin órdenes registradas.</p>;
+    return <p className="text-sm text-on-surface-variant">Sin órdenes registradas.</p>;
   }
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b text-left text-muted-foreground">
+          <tr className="border-b text-left text-on-surface-variant">
             <th className="pb-2 font-medium">ID</th>
             <th className="pb-2 font-medium">Servicio</th>
             <th className="pb-2 font-medium">Estado</th>
@@ -429,10 +470,10 @@ function OrderHistory({ clientPhone }: { clientPhone: string }) {
           {orders.map((o) => (
             <tr key={o.id} className="border-b">
               <td className="py-1.5">{o.id}</td>
-              <td className="py-1.5">{o.serviceType}</td>
+              <td className="py-1.5">{o.service_type}</td>
               <td className="py-1.5">{o.status}</td>
               <td className="py-1.5">${o.price.toFixed(2)}</td>
-              <td className="py-1.5">{new Date(o.createdAt).toLocaleDateString()}</td>
+              <td className="py-1.5">{new Date(o.created_at).toLocaleDateString()}</td>
             </tr>
           ))}
         </tbody>
