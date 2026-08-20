@@ -3,3 +3,4 @@ env = "BUN_PUBLIC_*"
 
 [test]
 preload = ["./tests/happydom.ts", "./tests/testing-library.ts"]
+root = "./tests"

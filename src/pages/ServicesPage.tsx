@@ -4,20 +4,16 @@ import { SERVICE_TYPES } from "@/lib/config/serviceTypes";
 import { AlertTriangle, Check } from "lucide-react";
 
 const SERVICE_UNITS: Record<string, string> = {
-  ensayo: "por página",
+  trabajos_escritos: "por tarea",
   presentacion: "por diapositiva",
-  investigacion: "tarifa base",
-  formato: "por página",
-  diseno: "por hora",
+  diseno: "por pieza",
   video: "por minuto",
 };
 
 const SERVICE_RANGES: Record<string, string> = {
-  ensayo: "$3–$5",
+  trabajos_escritos: "$2–$5",
   presentacion: "$4–$6",
-  investigacion: "$5",
-  formato: "$2–$3",
-  diseno: "$3–$5",
+  diseno: "$3–$14",
   video: "$8–$15",
 };
 

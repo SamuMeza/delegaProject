@@ -73,6 +73,17 @@ const server = Bun.serve({
       });
     }
 
+    const PUBLIC = join(ROOT, "public");
+    const publicFilePath = join(PUBLIC, pathname);
+    const publicFile = Bun.file(publicFilePath);
+    if (await publicFile.exists()) {
+      return new Response(publicFile, {
+        headers: {
+          "cache-control": "no-store",
+        },
+      });
+    }
+
     const filePath = join(SRC, pathname);
     const file = Bun.file(filePath);
     if (!(await file.exists())) {

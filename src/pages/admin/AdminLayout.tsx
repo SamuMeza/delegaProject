@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   LogOut,
   LayoutDashboard,
@@ -11,7 +11,8 @@ import {
   Download,
   Plus,
   Bell,
-  Home,
+  Menu,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -28,18 +29,12 @@ const SIDEBAR = [
   { to: "/admin/exportar", label: "Exportar", icon: Download, end: false },
 ];
 
-const BOTTOM_TABS = [
-  { to: "/admin", label: "Inicio", icon: Home, end: true },
-  { to: "/admin/ordenes", label: "Órdenes", icon: ClipboardList, end: false },
-  { to: "/admin/estadisticas", label: "Stats", icon: BarChart3, end: false },
-  { to: "/admin/activity-log", label: "Log", icon: ScrollText, end: false },
-];
-
 export function AdminLayout() {
   const { session, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { lastNotification, clearTabIndicator, notify } = useNotifications();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     function handleOrderCreated(e: Event) {
@@ -52,6 +47,10 @@ export function AdminLayout() {
     window.addEventListener("delega:order-created", handleOrderCreated);
     return () => window.removeEventListener("delega:order-created", handleOrderCreated);
   }, [notify]);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   function handleLogout() {
     logout();
@@ -115,6 +114,13 @@ export function AdminLayout() {
 
       {/* Mobile top app bar */}
       <header className="md:hidden fixed top-0 w-full h-16 bg-surface-studio flex justify-between items-center px-4 z-50 shadow-ambient">
+        <button
+          className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container transition-colors"
+          aria-label="Abrir menú"
+          onClick={() => setMobileOpen(true)}
+        >
+          <Menu className="h-5 w-5 text-primary" />
+        </button>
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
             <span className="text-on-primary-container text-xs font-bold">D</span>
@@ -131,11 +137,83 @@ export function AdminLayout() {
         </button>
       </header>
 
+      {/* Mobile sidebar drawer */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-[60] md:hidden">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setMobileOpen(false)}
+          />
+          <aside className="absolute left-0 top-0 h-full w-72 bg-surface-container-lowest shadow-ambient flex flex-col">
+            <div className="flex items-center justify-between px-4 h-16 border-b border-border-subtle">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+                  <span className="text-on-primary-container text-xs font-bold">D</span>
+                </div>
+                <h1 className="font-display text-headline-sm font-bold text-primary">Admin Panel</h1>
+              </div>
+              <button
+                className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors"
+                aria-label="Cerrar menú"
+                onClick={() => setMobileOpen(false)}
+              >
+                <X className="w-5 h-5 text-primary" />
+              </button>
+            </div>
+
+            <nav className="flex-1 py-4 overflow-y-auto" aria-label="Navegación móvil">
+              <ul className="space-y-1">
+                {SIDEBAR.map(({ to, label, icon: Icon, end }) => (
+                  <li key={to}>
+                    <NavLink
+                      to={to}
+                      end={end}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
+                          isActive
+                            ? "bg-secondary-container text-on-secondary-container"
+                            : "text-on-surface-variant hover:bg-surface-container"
+                        }`
+                      }
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span>{label}</span>
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div className="p-4 border-t border-border-subtle space-y-2">
+              <Button
+                className="w-full gap-2"
+                onClick={() => {
+                  setMobileOpen(false);
+                  navigate("/admin/ordenes?new=true");
+                }}
+              >
+                <Plus className="h-4 w-4" />
+                Nueva orden
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-3 text-on-surface-variant hover:bg-surface-container rounded-lg px-4 py-2 h-auto"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="text-sm font-medium">Cerrar sesión</span>
+              </Button>
+            </div>
+          </aside>
+        </div>
+      )}
+
       {/* Main content */}
       <div className="flex-1 flex flex-col md:ml-64">
         <main
           id="main-content"
-          className="flex-1 overflow-auto bg-surface-studio pt-16 md:pt-0 pb-20 md:pb-0"
+          className="flex-1 overflow-auto bg-surface-studio pt-16 md:pt-0"
           role="main"
         >
           <div className="max-w-[1280px] mx-auto px-4 py-6 md:px-16 md:py-12">
@@ -143,42 +221,6 @@ export function AdminLayout() {
           </div>
         </main>
       </div>
-
-      {/* Mobile bottom tab bar */}
-      <nav className="md:hidden fixed bottom-0 w-full bg-surface-container-lowest border-t border-border-subtle flex justify-around items-center h-[72px] z-50" aria-label="Navegación móvil">
-        {BOTTOM_TABS.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-1 w-16 h-full transition-colors ${
-                isActive
-                  ? "text-secondary"
-                  : "text-on-surface-variant hover:text-secondary"
-              }`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <div className={`w-12 h-8 rounded-full flex items-center justify-center ${isActive ? "bg-secondary-container" : ""}`}>
-                  <Icon className="h-5 w-5" />
-                </div>
-                <span className="text-[11px] font-bold tracking-wider uppercase">{label}</span>
-              </>
-            )}
-          </NavLink>
-        ))}
-      </nav>
-
-      {/* Mobile FAB */}
-      <button
-        className="md:hidden fixed bottom-24 right-4 w-14 h-14 bg-secondary text-white rounded-full shadow-ambient-hover flex items-center justify-center z-50"
-        aria-label="Crear nueva orden"
-        onClick={() => navigate("/admin/ordenes?new=true")}
-      >
-        <Plus className="h-6 w-6" />
-      </button>
 
       {lastNotification && (
         <NotificationToast

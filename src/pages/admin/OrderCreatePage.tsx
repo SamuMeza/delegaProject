@@ -7,13 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { OrderDetailsFields } from "@/components/OrderDetailsFields";
+import { FileUpload } from "@/components/landing/FileUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useDatabase";
 
 import { createOrder } from "@/lib/orders/service";
 import { parseWhatsApp } from "@/lib/orders/parseWhatsApp";
 import { defaultOrderDetails, SERVICE_TYPE_LABELS } from "@/lib/orders/ui";
-import type { OrderDetails, ServiceType } from "@/lib/types";
+import { uploadOrderFiles } from "@/lib/storage";
+import type { OrderDetails, OrderDetailsTrabajosEscritos, OrderDetailsPresentacion, OrderDetailsDiseno, OrderDetailsVideo, ServiceType } from "@/lib/types";
 
 const SERVICE_TYPES = Object.keys(SERVICE_TYPE_LABELS) as ServiceType[];
 
@@ -22,59 +24,44 @@ function mapParamsToDetails(
   params: Record<string, string>,
   description: string,
 ): OrderDetails {
-  const base = defaultOrderDetails(serviceType);
-
   switch (serviceType) {
-    case "ensayo": {
-      const paginas = params.pageRange ?? params.paginas ?? base.paginas;
+    case "trabajos_escritos": {
+      const base = defaultOrderDetails("trabajos_escritos") as OrderDetailsTrabajosEscritos;
       return {
         ...base,
+        subtipo: (params.subtipo ?? base.subtipo) as OrderDetailsTrabajosEscritos["subtipo"],
         tema: params.topic ?? params.tema ?? description,
-        paginas: paginas as OrderDetails["paginas"],
-        normas: (params.citationStyle ?? params.normas ?? base.normas) as OrderDetails["normas"],
+        paginas: (params.pageRange ?? params.paginas ?? base.paginas) as OrderDetailsTrabajosEscritos["paginas"],
       };
     }
     case "presentacion": {
-      const diapositivas = params.slideCount ?? params.diapositivas ?? base.diapositivas;
+      const base = defaultOrderDetails("presentacion") as OrderDetailsPresentacion;
       return {
         ...base,
         tema: params.topic ?? params.tema ?? description,
-        diapositivas: diapositivas as OrderDetails["diapositivas"],
-        estilo: (params.audienceLevel ?? params.estilo ?? base.estilo) as OrderDetails["estilo"],
-      };
-    }
-    case "investigacion": {
-      const fuentes = params.sourceCount ?? params.fuentesMinimas ?? base.fuentesMinimas;
-      return {
-        ...base,
-        tema: params.topic ?? params.tema ?? description,
-        fuentesMinimas: fuentes as OrderDetails["fuentesMinimas"],
-      };
-    }
-    case "formato": {
-      return {
-        ...base,
-        norma: (params.formatType ?? params.norma ?? base.norma) as OrderDetails["norma"],
-        tipoDocumento: (params.documentType ?? params.tipoDocumento ?? base.tipoDocumento) as OrderDetails["tipoDocumento"],
+        diapositivas: (params.slideCount ?? params.diapositivas ?? base.diapositivas) as OrderDetailsPresentacion["diapositivas"],
+        estilo: (params.audienceLevel ?? params.estilo ?? base.estilo) as OrderDetailsPresentacion["estilo"],
       };
     }
     case "diseno": {
+      const base = defaultOrderDetails("diseno") as OrderDetailsDiseno;
       return {
         ...base,
-        tipoDiseno: (params.designType ?? params.tipoDiseno ?? base.tipoDiseno) as OrderDetails["tipoDiseno"],
+        tipoDiseno: (params.designType ?? params.tipoDiseno ?? base.tipoDiseno) as OrderDetailsDiseno["tipoDiseno"],
         proposito: params.purpose ?? params.proposito ?? description,
         colores: params.colorScheme ?? params.colores,
       };
     }
     case "video": {
+      const base = defaultOrderDetails("video") as OrderDetailsVideo;
       return {
         ...base,
-        duracion: (params.duration ?? params.duracion ?? base.duracion) as OrderDetails["duracion"],
-        tipoVideo: (params.style ?? params.tipoVideo ?? base.tipoVideo) as OrderDetails["tipoVideo"],
+        duracion: (params.duration ?? params.duracion ?? base.duracion) as OrderDetailsVideo["duracion"],
+        tipoVideo: (params.style ?? params.tipoVideo ?? base.tipoVideo) as OrderDetailsVideo["tipoVideo"],
       };
     }
     default:
-      return base;
+      return defaultOrderDetails(serviceType);
   }
 }
 
@@ -85,15 +72,17 @@ export function OrderCreatePage() {
 
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
-  const [serviceType, setServiceType] = useState<ServiceType>("ensayo");
-  const [details, setDetails] = useState<OrderDetails>(defaultOrderDetails("ensayo"));
+  const [serviceType, setServiceType] = useState<ServiceType>("trabajos_escritos");
+  const [details, setDetails] = useState<OrderDetails>(defaultOrderDetails("trabajos_escritos"));
   const [dueDate, setDueDate] = useState("");
   const [urgent, setUrgent] = useState(false);
-  const [price, setPrice] = useState("3");
+  const [price, setPrice] = useState("2");
   const [paidAmount, setPaidAmount] = useState("0");
   const [paymentRef, setPaymentRef] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
 
   const [importText, setImportText] = useState("");
   const [importError, setImportError] = useState<string | null>(null);
@@ -125,6 +114,7 @@ export function OrderCreatePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setUploadErrors([]);
     if (!clientName.trim() || !clientPhone.trim()) {
       setError("Nombre y teléfono del cliente son obligatorios.");
       return;
@@ -149,6 +139,15 @@ export function OrderCreatePage() {
         },
         session.operatorId,
       );
+
+      // Subir archivos si hay
+      if (files.length > 0) {
+        const { errors } = await uploadOrderFiles(id, files);
+        if (errors.length > 0) {
+          setUploadErrors(errors);
+        }
+      }
+
       navigate(`/admin/ordenes/${id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo crear la orden.");
@@ -244,6 +243,22 @@ export function OrderCreatePage() {
           <legend className="px-2 text-sm font-semibold text-on-surface">Detalles del servicio</legend>
           <OrderDetailsFields serviceType={serviceType} value={details} onChange={setDetails} />
         </fieldset>
+
+        <div>
+          <Label className="text-sm font-semibold text-on-surface uppercase tracking-wider">Archivos adjuntos</Label>
+          <p className="text-xs text-on-surface-variant mb-2">Sube archivos relacionados con la orden (PDF, DOCX). Máximo 5 archivos, 10MB cada uno.</p>
+          <FileUpload files={files} onChange={setFiles} />
+          {uploadErrors.length > 0 && (
+            <div className="mt-2 p-2 rounded-lg bg-error/10 border border-error/20">
+              <p className="text-xs font-semibold text-error mb-1">Error al subir archivos:</p>
+              <ul className="text-xs text-on-surface-variant list-disc list-inside">
+                {uploadErrors.map((err, i) => (
+                  <li key={i}>{err}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>

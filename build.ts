@@ -42,3 +42,12 @@ await cp(
   { recursive: true },
 );
 
+const publicDir = path.join(process.cwd(), "public");
+if (await Bun.file(path.join(publicDir, "hero.jpg")).exists() || (await Bun.file(publicDir).exists())) {
+  try {
+    await cp(publicDir, outdir, { recursive: true });
+  } catch (e) {
+    // Si la carpeta public no existe o está vacía no detiene el build
+  }
+}
+

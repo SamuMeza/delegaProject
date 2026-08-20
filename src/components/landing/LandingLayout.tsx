@@ -1,4 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -10,6 +12,7 @@ const links = [
 
 export function LandingLayout({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen flex-col bg-surface-studio">
@@ -53,13 +56,78 @@ export function LandingLayout({ children }: { children: React.ReactNode }) {
             </Link>
             <Link
               to="/delegar"
-              className="px-6 py-2 bg-primary text-on-primary text-sm font-semibold rounded-lg hover:bg-primary/90 transition-all shadow-ambient hover:shadow-ambient-hover"
+              className="hidden md:inline-flex px-6 py-2 bg-primary text-on-primary text-sm font-semibold rounded-lg hover:bg-primary/90 transition-all shadow-ambient hover:shadow-ambient-hover"
             >
               Delegar Ahora
             </Link>
+            {/* Mobile hamburger */}
+            <button
+              className="md:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors"
+              aria-label="Abrir menú"
+              onClick={() => setMobileOpen(true)}
+            >
+              <Menu className="w-5 h-5 text-primary" />
+            </button>
           </div>
         </nav>
       </header>
+
+      {/* Mobile sidebar drawer */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-[60] md:hidden">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setMobileOpen(false)}
+          />
+          <aside className="absolute left-0 top-0 h-full w-72 bg-surface-container-lowest shadow-ambient flex flex-col">
+            <div className="flex items-center justify-between px-4 h-16 border-b border-border-subtle">
+              <Link
+                to="/"
+                className="font-display text-headline-md font-bold text-primary"
+                onClick={() => setMobileOpen(false)}
+              >
+                Delega
+              </Link>
+              <button
+                className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors"
+                aria-label="Cerrar menú"
+                onClick={() => setMobileOpen(false)}
+              >
+                <X className="w-5 h-5 text-primary" />
+              </button>
+            </div>
+            <nav className="flex-1 py-4">
+              <ul className="space-y-1">
+                {links.map((link) => (
+                  <li key={link.to}>
+                    <Link
+                      to={link.to}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 text-sm font-semibold transition-colors",
+                        pathname === link.to
+                          ? "bg-secondary-container text-on-secondary-container"
+                          : "text-on-surface-variant hover:bg-surface-container",
+                      )}
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <div className="p-4 border-t border-border-subtle">
+              <Link
+                to="/delegar"
+                className="flex items-center justify-center w-full px-6 py-3 bg-primary text-on-primary text-sm font-semibold rounded-lg hover:bg-primary/90 transition-all"
+                onClick={() => setMobileOpen(false)}
+              >
+                Delegar Ahora
+              </Link>
+            </div>
+          </aside>
+        </div>
+      )}
 
       {/* Main content */}
       <main id="main-content" className="flex-1 pt-16">
@@ -79,15 +147,15 @@ export function LandingLayout({ children }: { children: React.ReactNode }) {
           {/* Legal */}
           <div className="flex flex-col gap-4">
             <span className="text-xs font-bold uppercase tracking-widest text-on-primary-container">Legal</span>
-            <a className="text-sm text-on-primary-container hover:text-white transition-colors" href="#">Términos de servicio</a>
-            <a className="text-sm text-on-primary-container hover:text-white transition-colors" href="#">Política de privacidad</a>
-            <a className="text-sm text-on-primary-container hover:text-white transition-colors" href="#">Aviso de integridad académica</a>
+            <Link className="text-sm text-on-primary-container hover:text-white transition-colors" to="/legal/terminos">Términos de servicio</Link>
+            <Link className="text-sm text-on-primary-container hover:text-white transition-colors" to="/legal/privacidad">Política de privacidad</Link>
+            <Link className="text-sm text-on-primary-container hover:text-white transition-colors" to="/legal/integridad">Aviso de integridad académica</Link>
           </div>
           {/* Support */}
           <div className="flex flex-col gap-4">
             <span className="text-xs font-bold uppercase tracking-widest text-on-primary-container">Soporte</span>
-            <a className="text-sm text-on-primary-container hover:text-white transition-colors" href="#">WhatsApp</a>
-            <a className="text-sm text-on-primary-container hover:text-white transition-colors" href="#">FAQ</a>
+            <a className="text-sm text-on-primary-container hover:text-white transition-colors" href="https://wa.me/584167050424" target="_blank" rel="noreferrer">WhatsApp</a>
+            <Link className="text-sm text-on-primary-container hover:text-white transition-colors" to="/contacto#faq">FAQ</Link>
           </div>
           {/* Services */}
           <div className="flex flex-col gap-4">

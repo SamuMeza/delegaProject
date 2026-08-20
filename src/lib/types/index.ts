@@ -17,10 +17,8 @@ export interface PagoMovilInfo {
 }
 
 export type ServiceType =
-  | "ensayo"
+  | "trabajos_escritos"
   | "presentacion"
-  | "investigacion"
-  | "formato"
   | "diseno"
   | "video";
 
@@ -112,10 +110,10 @@ export interface OrderFile {
   uploadedAt: string;
 }
 
-export interface OrderDetailsEnsayo {
+export interface OrderDetailsTrabajosEscritos {
+  subtipo: "ensayo" | "tesis" | "monografia" | "informe" | "articulo" | "formato";
   tema: string;
   paginas: "1-3" | "4-7" | "8+";
-  normas: "ninguna" | "APA" | "ISO" | "otra";
   tieneGuia: boolean;
   instruccionesEspeciales?: string;
 }
@@ -130,24 +128,8 @@ export interface OrderDetailsPresentacion {
   instruccionesEspeciales?: string;
 }
 
-export interface OrderDetailsInvestigacion {
-  tema: string;
-  profundidad: "basica" | "media" | "avanzada";
-  fuentesMinimas: "no-importa" | "3-5" | "6-10" | "mas-10";
-  formatoEntrega: "resumen" | "fichas" | "estado-del-arte";
-  tieneGuia: boolean;
-}
-
-export interface OrderDetailsFormato {
-  tipoDocumento: "word" | "pdf" | "powerpoint";
-  norma: "APA" | "ISO" | "otra";
-  necesitaIndice: boolean;
-  necesitaPortada: boolean;
-  notasAdicionales?: string;
-}
-
 export interface OrderDetailsDiseno {
-  tipoDiseno: "flayer" | "infografia" | "portada" | "otro";
+  tipoDiseno: "flayer" | "infografia" | "portada" | "flyers_animados" | "paquete_fotos" | "otro";
   proposito: string;
   colores?: string;
   textoIncluir: string;
@@ -173,10 +155,8 @@ export interface OrderDetailsVideo {
 }
 
 export type OrderDetails =
-  | OrderDetailsEnsayo
+  | OrderDetailsTrabajosEscritos
   | OrderDetailsPresentacion
-  | OrderDetailsInvestigacion
-  | OrderDetailsFormato
   | OrderDetailsDiseno
   | OrderDetailsVideo;
 

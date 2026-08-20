@@ -1,14 +1,23 @@
 import type { ServiceType } from "@/lib/types";
 
 const SERVICE_TYPE_MAP: Record<string, ServiceType> = {
-  ensayo: "ensayo",
+  ensayo: "trabajos_escritos",
+  "trabajos escritos": "trabajos_escritos",
+  "trabajos_escritos": "trabajos_escritos",
+  tesis: "trabajos_escritos",
+  monografia: "trabajos_escritos",
+  informe: "trabajos_escritos",
+  articulo: "trabajos_escritos",
+  formato: "trabajos_escritos",
+  "formato apa": "trabajos_escritos",
   presentación: "presentacion",
   presentacion: "presentacion",
-  investigación: "investigacion",
-  investigacion: "investigacion",
-  formato: "formato",
+  investigación: "trabajos_escritos",
+  investigacion: "trabajos_escritos",
   diseño: "diseno",
   diseno: "diseno",
+  "flyers animados": "diseno",
+  "paquete fotos": "diseno",
   video: "video",
 };
 
@@ -39,7 +48,7 @@ function parseParameters(raw: string): Record<string, string> {
 
 function mapServiceType(raw: string): ServiceType {
   const normalized = raw.toLowerCase().trim();
-  return SERVICE_TYPE_MAP[normalized] ?? "ensayo";
+  return SERVICE_TYPE_MAP[normalized] ?? "trabajos_escritos";
 }
 
 export interface ParsedWhatsApp {
@@ -57,13 +66,13 @@ export function parseWhatsApp(text: string): ParsedWhatsApp | null {
 
   const clientName = extractLine(text, "👤\\s*Cliente:") ?? "";
   const clientPhone = extractLine(text, "📞\\s*Contacto:") ?? "";
-  const serviceRaw = extractLine(text, "🎓\\s*Servicio:") ?? "ensayo";
+  const serviceRaw = extractLine(text, "🎓\\s*Servicio:") ?? "trabajos_escritos";
   const description = extractLine(text, "📝\\s*Descripción:") ?? "";
   const parametersRaw = extractLine(text, "⚙️\\s*Parámetros:") ?? "";
   const priceRaw = extractLine(text, "💰\\s*Precio\\s*estimado:") ?? "0";
 
   const priceMatch = priceRaw.match(/([\d.]+)/);
-  const price = priceMatch ? parseFloat(priceMatch[1]) : 0;
+  const price = priceMatch?.[1] ? parseFloat(priceMatch[1]) : 0;
 
   return {
     clientName,
