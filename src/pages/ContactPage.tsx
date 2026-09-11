@@ -53,6 +53,8 @@ const HOW_IT_WORKS = [
   { step: "3", title: "Recibe tu trabajo", desc: "Nuestro equipo trabaja en tu solicitud y te entrega el resultado." },
 ];
 
+const BINANCE_WALLET = "0x7f47668416969ab6b8f67788e024aafda294eb57";
+
 export function ContactPage() {
   const config = useConfig();
   const faqs = config?.faqs?.length ? config.faqs : DEFAULT_FAQS;
@@ -161,7 +163,7 @@ export function ContactPage() {
           </div>
         </section>
 
-        {/* Contact form */}
+        {/* Contact form + payment info */}
         <section className="mb-16">
           <h2 className="mb-4 font-display text-headline-md text-primary">
             Envíanos un mensaje
@@ -169,51 +171,93 @@ export function ContactPage() {
           <p className="mb-6 text-on-surface-variant text-sm">
             Completa el formulario y te redirigiremos a WhatsApp con tu mensaje listo para enviar.
           </p>
-          <form onSubmit={handleContactSubmit} className="bg-surface-container-lowest rounded-xl shadow-ambient p-6 max-w-lg space-y-4">
-            <div>
-              <label htmlFor="contact-name" className="mb-1 block text-sm font-semibold text-on-surface uppercase tracking-wider">
-                Tu nombre
-              </label>
-              <input
-                id="contact-name"
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                className="h-12 w-full rounded-lg border border-border-subtle bg-surface-studio px-4 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-secondary focus-visible:outline-offset-2"
-                placeholder="Ej: María Pérez"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="contact-message" className="mb-1 block text-sm font-semibold text-on-surface uppercase tracking-wider">
-                Mensaje
-              </label>
-              <textarea
-                id="contact-message"
-                value={contactMessage}
-                onChange={(e) => setContactMessage(e.target.value)}
-                className="w-full rounded-lg border border-border-subtle bg-surface-studio px-4 py-3 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-secondary focus-visible:outline-offset-2 resize-none"
-                rows={4}
-                placeholder="Cuéntanos en qué necesitas ayuda..."
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="inline-flex items-center gap-2 rounded-lg bg-[#25D366] px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-[#1DA851] shadow-ambient hover:shadow-ambient-hover"
-            >
-              {sent ? (
-                <>
-                  <Check className="w-4 h-4" />
-                  ¡Mensaje preparado!
-                </>
-              ) : (
-                <>
-                  <MessageCircle className="w-4 h-4" />
-                  Enviar por WhatsApp
-                </>
+
+          <div className="grid gap-8 md:grid-cols-2">
+            {/* Formulario */}
+            <form onSubmit={handleContactSubmit} className="bg-surface-container-lowest rounded-xl shadow-ambient p-6 space-y-4">
+              <div>
+                <label htmlFor="contact-name" className="mb-1 block text-sm font-semibold text-on-surface uppercase tracking-wider">
+                  Tu nombre
+                </label>
+                <input
+                  id="contact-name"
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                  className="h-12 w-full rounded-lg border border-border-subtle bg-surface-studio px-4 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-secondary focus-visible:outline-offset-2"
+                  placeholder="Ej: María Pérez"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="contact-message" className="mb-1 block text-sm font-semibold text-on-surface uppercase tracking-wider">
+                  Mensaje
+                </label>
+                <textarea
+                  id="contact-message"
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  className="w-full rounded-lg border border-border-subtle bg-surface-studio px-4 py-3 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-secondary focus-visible:outline-offset-2 resize-none"
+                  rows={4}
+                  placeholder="Cuéntanos en qué necesitas ayuda..."
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="inline-flex items-center gap-2 rounded-lg bg-[#25D366] px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-[#1DA851] shadow-ambient hover:shadow-ambient-hover"
+              >
+                {sent ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    ¡Mensaje preparado!
+                  </>
+                ) : (
+                  <>
+                    <MessageCircle className="w-4 h-4" />
+                    Enviar por WhatsApp
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Info de pago */}
+            <div className="space-y-6">
+              {/* Binance */}
+              <div className="bg-surface-container-lowest rounded-xl shadow-ambient p-6 text-center">
+                <h3 className="mb-3 font-display text-title-md text-primary">
+                  Binance USDT — Internacional
+                </h3>
+                <img
+                  src="/qr-binance.png"
+                  alt="QR Binance"
+                  className="w-48 h-48 object-contain mx-auto mb-3"
+                />
+                <p className="text-xs break-all text-on-surface-variant mb-2">
+                  {BINANCE_WALLET}
+                </p>
+                <p className="text-xs text-on-surface-variant">
+                  Escanea el QR o copia la dirección para enviar USDT. Envía el comprobante por WhatsApp.
+                </p>
+              </div>
+
+              {/* Pago Móvil */}
+              {config?.pagoMovil && (
+                <div className="bg-surface-container-lowest rounded-xl shadow-ambient p-6">
+                  <h3 className="mb-3 font-display text-title-md text-primary">
+                    Pago Móvil — Venezuela
+                  </h3>
+                  <div className="space-y-1 text-sm text-on-surface">
+                    <p><span className="font-semibold">Banco:</span> {config.pagoMovil.bank}</p>
+                    <p><span className="font-semibold">RIF:</span> {config.pagoMovil.rif}</p>
+                    <p><span className="font-semibold">Teléfono:</span> {config.pagoMovil.phone}</p>
+                  </div>
+                  <p className="mt-3 text-xs text-on-surface-variant">
+                    Envía el comprobante de pago por WhatsApp para confirmar tu orden.
+                  </p>
+                </div>
               )}
-            </button>
-          </form>
+            </div>
+          </div>
         </section>
 
         {/* Disclaimers */}
